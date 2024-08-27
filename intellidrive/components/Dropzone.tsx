@@ -1,11 +1,40 @@
 'use client'
 
 import { cn } from '@/lib/utils';
-import React from 'react'
+import { useUser } from '@clerk/nextjs';
+import React, { useState } from 'react'
 import DropzoneComponent from 'react-dropzone'
 
 function Dropzone() {
     const maxSize = 20971520; //20MB
+
+    const [loading, setLoading] = useState(false);
+    const { isLoaded, isSignedIn, user } = useUser();
+
+    const onDrop = (acceptedFiles: File[]) => {
+        acceptedFiles.forEach(file => {
+            const reader = new FileReader();
+            // TODO: toast notifcation on error instead of console log
+            reader.onabort = () => console.log("file reading was aborted");
+            reader.onerror = () => console.log("file reading failed");
+            reader.onload = async () => {
+                await uploadPost(file);
+            };
+            reader.readAsArrayBuffer(file);
+        });
+    };
+
+    const uploadPost = async (selectedFile: File) => {
+        if (loading) return; //to avoid duplicate upload
+        if (!user) return; // TODO: update firebase rules after october 1st
+        setLoading(true);
+
+
+
+
+
+        setLoading(false);
+    }
     
 
   return (
