@@ -10,6 +10,7 @@ import {
   UserButton
 } from '@clerk/nextjs'
 import Header from "@/components/Header";
+import { ThemeProvider } from "@/components/theme-provider"
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -27,8 +28,15 @@ export default function RootLayout({
     <ClerkProvider>
       <html lang="en">
         <body>
+        <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
           <Header />
           {children}
+          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>

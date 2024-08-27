@@ -8,6 +8,7 @@ import {
     SignedOut,
     UserButton
   } from '@clerk/nextjs'
+import { ThemeToggler } from './ThemeToggler'
 
 function Header() {
   return (
@@ -26,7 +27,8 @@ function Header() {
 
         </Link>
         <div className="px-5 flex space-x-2 items-center">
-            {/*Theme toggler, add aftersignouturl to clerkprovider and not the user button*/}
+            {/*add aftersignouturl to clerkprovider and not the user button*/}
+            <ThemeToggler />
             <UserButton />
 
             <SignedOut>
