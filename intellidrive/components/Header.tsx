@@ -1,6 +1,13 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
+import {
+    ClerkProvider,
+    SignInButton,
+    SignedIn,
+    SignedOut,
+    UserButton
+  } from '@clerk/nextjs'
 
 function Header() {
   return (
@@ -18,6 +25,14 @@ function Header() {
             <h1  className="font-bold text-xl">IntelliDrive</h1>
 
         </Link>
+        <div className="px-5 flex space-x-2 items-center">
+            {/*Theme toggler, add aftersignouturl to clerkprovider and not the user button*/}
+            <UserButton />
+
+            <SignedOut>
+                <SignInButton mode="modal" />
+            </SignedOut>
+        </div>
 
 
     </header>

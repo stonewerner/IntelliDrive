@@ -6,12 +6,13 @@ import {
   SignedOut,
   UserButton
 } from '@clerk/nextjs'
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   return (
     <main className="">
       <h1>IntelliDrive</h1>
-      <UserButton />
+      <Button variant={"secondary"}>My Demo Button</Button>
     </main>
   );
 }
