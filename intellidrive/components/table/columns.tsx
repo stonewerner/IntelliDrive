@@ -2,7 +2,7 @@
 
 import { FileType } from "@/typings"
 import { ColumnDef } from "@tanstack/react-table"
-import { FileIcon, defaultStyles } from "react-file-icon";
+import { FileIcon, defaultStyles, DefaultExtensionType } from "react-file-icon";
 import prettyBytes from "pretty-bytes";
 import { COLOR_EXTENSION_MAP } from "@/constant";
 
@@ -14,13 +14,13 @@ export const columns: ColumnDef<FileType>[] = [
         header: "Type",
         cell: ({ row }) => {
             const type = row.getValue("type") as string;
-            const extension: string = type.split("/")[1];
+            const extension = type.split("/")[1] as DefaultExtensionType;
             return (
                 <div className="w-10">
                     <FileIcon 
                         extension={extension}
                         labelColor={COLOR_EXTENSION_MAP[extension]}
-                        {...defaultStyles[extension]}
+                        {...(defaultStyles[extension] ||{})}
                     />
                 </div>
             );
