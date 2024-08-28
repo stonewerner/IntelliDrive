@@ -15,8 +15,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { useAppStore } from "@/store/store";
+import { useUser } from '@clerk/nextjs'
+import { deleteObject, ref } from 'firebase/storage'
+import { db, storage } from '@/firebase'
+import { deleteDoc, doc } from 'firebase/firestore'
 
 export function DeleteModal() {
+    const { user } = useUser();
     const [isDeleteModalOpen, setIsDeleteModalOpen, fileId, setFileId] = 
     useAppStore((state) => [
         state.isDeleteModalOpen,
@@ -25,7 +30,27 @@ export function DeleteModal() {
         state.setFileId,
     ]);
 
-    async function deleteFile() {}
+    async function deleteFile() {
+        if (!user || ! fileId) return;
+
+        const fileRef = ref(storage, `users/${user.id}/files/${fileId}`);
+
+        try {
+            deleteObject(fileRef).then(async () => {
+                console.log("deleting file.");
+    
+                deleteDoc(doc(db, "users", user.id, "files", fileId)).then(() => {
+                    console.log("deleted!")
+                });
+            }).finally(() => {
+                setIsDeleteModalOpen(false);
+            });
+        } catch (error) {
+            console.log("something went wrong with deleting.")
+            console.log(error);
+        }
+        setIsDeleteModalOpen(false);
+    }
 
 
 
@@ -58,19 +83,13 @@ export function DeleteModal() {
                 type="submit"
                 size="sm"
                 className="px-3 flex-1"
+                variant={"destructive"}
                 onClick={() => deleteFile()}
                 >
                     <span className="sr-only">Delete</span>
                     <span>Delete</span>
             </Button>
         </div>
-        <DialogFooter className="sm:justify-start">
-          <DialogClose asChild>
-            <Button type="button" variant="secondary">
-              Close
-            </Button>
-          </DialogClose>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   )
