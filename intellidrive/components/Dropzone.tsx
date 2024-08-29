@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils';
-import { useUser } from '@clerk/nextjs';
+import { useUser, useOrganization } from '@clerk/nextjs';
 import React, { useState } from 'react'
 import DropzoneComponent from 'react-dropzone'
 import {addDoc, collection, serverTimestamp, updateDoc, doc} from "firebase/firestore"
@@ -14,6 +14,7 @@ function Dropzone() {
 
     const [loading, setLoading] = useState(false);
     const { isLoaded, isSignedIn, user } = useUser();
+    const { organization } = useOrganization();
 
     const onDrop = (acceptedFiles: File[]) => {
         acceptedFiles.forEach(file => {
@@ -34,7 +35,7 @@ function Dropzone() {
         setLoading(true);
         const toastId = toast.loading("Uploading...");
 
-        const docRef = await addDoc(collection(db, "users", user.id, "files"), {
+        const docRef = await addDoc(collection(db, organization ? `organizations/${organization.id}/files` : `users/${user.id}/files`), {
             userId: user.id,
             filename: selectedFile.name,
             fullName: user.fullName,
@@ -43,13 +44,14 @@ function Dropzone() {
             type: selectedFile.type,
             size: selectedFile.size,
         })
-        const imageRef = ref(storage, `users/${user.id}/files/${docRef.id}`);
+        const imageRef = ref(storage, `${organization ? `organizations/${organization.id}` : `users/${user.id}`}/${docRef.id}`)
+        //const imageRef = ref(storage, `users/${user.id}/files/${docRef.id}`);
         uploadBytes(imageRef, selectedFile).then(async (snapshot) => {
             const downloadURL = await getDownloadURL(imageRef);
 
-            await updateDoc(doc(db, "users", user.id, "files", docRef.id), {
-                downloadURL: downloadURL,
-            });
+            await updateDoc(docRef, {
+              downloadURL: downloadURL,
+            })
         });
 
         toast.success("Uploaded Successfully", {
