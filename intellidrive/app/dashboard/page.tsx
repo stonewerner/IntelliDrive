@@ -5,6 +5,8 @@ import { getDocs, collection } from "firebase/firestore";
 import { db, storage } from '@/firebase';
 import { FileType } from '@/typings';
 import TableWrapper from '@/components/table/TableWrapper';
+import OrganizationSwitcherComponent from '@/components/OrganizationSwitcher';
+//import JoinedOrganizations from '@/components/JoinedOrganizations';
 
 async function Dashboard() {
   const {userId} = auth();
@@ -26,6 +28,7 @@ async function Dashboard() {
 
       <section className="container space-y-5">
         <h2 className="font-bold">All Files</h2>
+        <OrganizationSwitcherComponent />
         <div>
           <TableWrapper skeletonFiles={skeletonFiles} />
         </div>
