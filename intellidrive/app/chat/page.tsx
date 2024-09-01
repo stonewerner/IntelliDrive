@@ -1,7 +1,14 @@
 "use client";
 
-import { Box, Stack, Button, TextField } from "@mui/material";
-import React, { useState } from "react";
+import {
+    Box,
+    Stack,
+    TextField,
+    InputAdornment,
+    IconButton,
+} from "@mui/material";
+import { Send } from "@mui/icons-material";
+import React, { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import { useUser } from "@clerk/nextjs";
@@ -71,6 +78,17 @@ export default function Chat() {
         });
     };
 
+    const messageEndRef = useRef<HTMLDivElement | null>(null);
+
+    const scrollToBottom = () => {
+        console.log("Scrolling....");
+        messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
+
     return (
         <Box
             width="100vw"
@@ -122,18 +140,39 @@ export default function Chat() {
                             </Box>
                         </Box>
                     ))}
+                    <div ref={messageEndRef} />
                 </Stack>
                 <Stack direction="row" spacing={2}>
                     <TextField
                         label="Message"
                         fullWidth
+                        multiline
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         onKeyUp={handleKeyPress}
+                        slotProps={{
+                            input: {
+                                endAdornment: (
+                                    <InputAdornment
+                                        position="end"
+                                        sx={{
+                                            position: "absolute",
+                                            bottom: 13,
+                                            right: 5,
+                                        }}
+                                    >
+                                        <IconButton onClick={sendMessage}>
+                                            <Send
+                                                sx={{
+                                                    transform: "rotate(-45deg)",
+                                                }}
+                                            />
+                                        </IconButton>
+                                    </InputAdornment>
+                                ),
+                            },
+                        }}
                     />
-                    <Button variant="contained" onClick={sendMessage}>
-                        Send
-                    </Button>
                 </Stack>
             </Stack>
         </Box>
