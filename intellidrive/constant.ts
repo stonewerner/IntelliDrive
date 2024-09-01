@@ -1,4 +1,4 @@
-export const COLOR_EXTENSION_MAP: { [key: string]: string; } = {
+export const COLOR_EXTENSION_MAP: { [key: string]: string } = {
     pdf: "#0160FE",
     docx: "#2b579a",
     doc: "#2b579a",
@@ -28,5 +28,5 @@ export const COLOR_EXTENSION_MAP: { [key: string]: string; } = {
     dll: "#4B0082",
     iso: "#CD853F",
     bat: "#000000",
-    sh: "#4EAA25"
+    sh: "#4EAA25",
 };

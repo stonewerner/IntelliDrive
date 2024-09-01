@@ -1,5 +1,5 @@
 export type FileType = {
-    id: string, 
+    id: string;
     filename: string;
     fullName: string;
     timestamp: Date;

@@ -1,12 +1,10 @@
-"use client"
+"use client";
 
-import { FileType } from "@/typings"
-import { ColumnDef } from "@tanstack/react-table"
+import { FileType } from "@/typings";
+import { ColumnDef } from "@tanstack/react-table";
 import { FileIcon, defaultStyles, DefaultExtensionType } from "react-file-icon";
 import prettyBytes from "pretty-bytes";
 import { COLOR_EXTENSION_MAP } from "@/constant";
-
-
 
 export const columns: ColumnDef<FileType>[] = [
     {
@@ -17,10 +15,10 @@ export const columns: ColumnDef<FileType>[] = [
             const extension = type.split("/")[1] as DefaultExtensionType;
             return (
                 <div className="w-10">
-                    <FileIcon 
+                    <FileIcon
                         extension={extension}
                         labelColor={COLOR_EXTENSION_MAP[extension]}
-                        {...(defaultStyles[extension] ||{})}
+                        {...(defaultStyles[extension] || {})}
                     />
                 </div>
             );
@@ -48,7 +46,7 @@ export const columns: ColumnDef<FileType>[] = [
         cell: ({ row }) => {
             const downloadURL = row.getValue("downloadURL") as string;
             return (
-                <a 
+                <a
                     href={downloadURL}
                     target="_blank"
                     className="underline text-blue-500 hover:text-blue-600"
@@ -107,4 +105,3 @@ export const columns: ColumnDef<FileType>[] = [
     ),
   },
 ];*/
-
