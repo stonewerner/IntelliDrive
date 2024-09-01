@@ -16,16 +16,14 @@ interface AppState {
 
 export const useAppStore = create<AppState>()((set) => ({
     fileId: null,
-    setFileId: (fileId: string) => set((state) => ({ fileId })),
+    setFileId: (fileId: string) => set({ fileId }),
 
     filename: "",
-    setFilename: (filename: string) => set((state) => ({ filename })),
+    setFilename: (filename: string) => set({ filename }),
 
     isDeleteModalOpen: false,
-    setIsDeleteModalOpen: (open) =>
-        set((state) => ({ isDeleteModalOpen: open })),
+    setIsDeleteModalOpen: (open) => set({ isDeleteModalOpen: open }),
 
     isRenameModalOpen: false,
-    setIsRenameModalOpen: (open) =>
-        set((state) => ({ isRenameModalOpen: open })),
+    setIsRenameModalOpen: (open) => set({ isRenameModalOpen: open }),
 }));

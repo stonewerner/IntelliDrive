@@ -16,7 +16,7 @@ function TableWrapper({ skeletonFiles }: { skeletonFiles: FileType[] }) {
     const [initialFiles, setInitialFiles] = useState<FileType[]>([]);
     const [sort, setSort] = useState<"asc" | "desc">("desc");
 
-    const [docs, loading, error] = useCollection(
+    const [docs] = useCollection(
         user &&
             query(
                 collection(db, "users", user.id, "files"),

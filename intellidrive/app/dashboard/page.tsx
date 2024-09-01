@@ -2,7 +2,7 @@ import React from "react";
 import { auth } from "@clerk/nextjs/server";
 import Dropzone from "@/components/Dropzone";
 import { getDocs, collection } from "firebase/firestore";
-import { db, storage } from "@/firebase";
+import { db } from "@/firebase";
 import { FileType } from "@/typings";
 import TableWrapper from "@/components/table/TableWrapper";
 

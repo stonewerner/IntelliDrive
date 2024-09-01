@@ -19,13 +19,14 @@ import toast from "react-hot-toast";
 
 export function DeleteModal() {
     const { user } = useUser();
-    const [isDeleteModalOpen, setIsDeleteModalOpen, fileId, setFileId] =
-        useAppStore((state) => [
+    const [isDeleteModalOpen, setIsDeleteModalOpen, fileId] = useAppStore(
+        (state) => [
             state.isDeleteModalOpen,
             state.setIsDeleteModalOpen,
             state.fileId,
             state.setFileId,
-        ]);
+        ]
+    );
 
     async function deleteFile() {
         if (!user || !fileId) return;
