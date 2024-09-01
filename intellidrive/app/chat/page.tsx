@@ -90,97 +90,100 @@ export default function Chat() {
     }, [messages]);
 
     return (
-        <Box
-            width="100vw"
-            height="90vh"
-            display="flex"
-            flexDirection="column"
-            justifyContent="center"
-            alignItems="center"
-        >
-            <Stack
-                direction="column"
-                width="600px"
-                height="700px"
-                border={1}
-                borderColor={"grey.400"}
-                borderRadius={2}
-                p={2}
-                spacing={3}
-                mt={3}
+        <div className="border-t">
+            <Box
+                width="100vw"
+                height="90vh"
+                display="flex"
+                flexDirection="column"
+                justifyContent="center"
+                alignItems="center"
             >
                 <Stack
                     direction="column"
-                    spacing={2}
-                    flexGrow={1}
-                    overflow="auto"
-                    maxHeight="100%"
+                    width="600px"
+                    height="700px"
+                    border={1}
+                    borderColor={"grey.400"}
+                    borderRadius={2}
+                    p={2}
+                    spacing={3}
+                    mt={3}
                 >
-                    {messages.map((message, index) => (
-                        <Box
-                            key={index}
-                            display="flex"
-                            justifyContent={
-                                message.role === "assistant"
-                                    ? "flex-start"
-                                    : "flex-end"
-                            }
-                        >
+                    <Stack
+                        direction="column"
+                        spacing={2}
+                        flexGrow={1}
+                        overflow="auto"
+                        maxHeight="100%"
+                    >
+                        {messages.map((message, index) => (
                             <Box
-                                bgcolor={
+                                key={index}
+                                display="flex"
+                                justifyContent={
                                     message.role === "assistant"
-                                        ? "grey.200"
-                                        : "primary.main"
+                                        ? "flex-start"
+                                        : "flex-end"
                                 }
-                                color={
-                                    message.role === "assistant"
-                                        ? "black"
-                                        : "white"
-                                }
-                                borderRadius={5}
-                                p={3}
                             >
-                                <ReactMarkdown rehypePlugins={[rehypeRaw]}>
-                                    {message.content}
-                                </ReactMarkdown>
+                                <Box
+                                    bgcolor={
+                                        message.role === "assistant"
+                                            ? "grey.200"
+                                            : "primary.main"
+                                    }
+                                    color={
+                                        message.role === "assistant"
+                                            ? "black"
+                                            : "white"
+                                    }
+                                    borderRadius={5}
+                                    p={3}
+                                >
+                                    <ReactMarkdown rehypePlugins={[rehypeRaw]}>
+                                        {message.content}
+                                    </ReactMarkdown>
+                                </Box>
                             </Box>
-                        </Box>
-                    ))}
-                    <div ref={messageEndRef} />
+                        ))}
+                        <div ref={messageEndRef} />
+                    </Stack>
+                    <Stack direction="row" spacing={2}>
+                        <TextField
+                            label="Message"
+                            fullWidth
+                            multiline
+                            value={message}
+                            onChange={(e) => setMessage(e.target.value)}
+                            onKeyUp={handleKeyPress}
+                            slotProps={{
+                                input: {
+                                    endAdornment: (
+                                        <InputAdornment
+                                            position="end"
+                                            sx={{
+                                                position: "absolute",
+                                                bottom: 13,
+                                                right: 5,
+                                            }}
+                                        >
+                                            <IconButton onClick={sendMessage}>
+                                                <Send
+                                                    sx={{
+                                                        transform:
+                                                            "rotate(-45deg)",
+                                                    }}
+                                                />
+                                            </IconButton>
+                                        </InputAdornment>
+                                    ),
+                                },
+                            }}
+                        />
+                    </Stack>
                 </Stack>
-                <Stack direction="row" spacing={2}>
-                    <TextField
-                        label="Message"
-                        fullWidth
-                        multiline
-                        value={message}
-                        onChange={(e) => setMessage(e.target.value)}
-                        onKeyUp={handleKeyPress}
-                        slotProps={{
-                            input: {
-                                endAdornment: (
-                                    <InputAdornment
-                                        position="end"
-                                        sx={{
-                                            position: "absolute",
-                                            bottom: 13,
-                                            right: 5,
-                                        }}
-                                    >
-                                        <IconButton onClick={sendMessage}>
-                                            <Send
-                                                sx={{
-                                                    transform: "rotate(-45deg)",
-                                                }}
-                                            />
-                                        </IconButton>
-                                    </InputAdornment>
-                                ),
-                            },
-                        }}
-                    />
-                </Stack>
-            </Stack>
-        </Box>
+            </Box>
+        </div>
     );
 }
