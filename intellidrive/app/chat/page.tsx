@@ -1,7 +1,7 @@
 "use client";
 
 import { Box, Stack, Button, TextField } from "@mui/material";
-import { useState } from "react";
+import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import { useUser } from "@clerk/nextjs";
@@ -16,6 +16,13 @@ export default function Chat() {
                 "Hi, I'm the IntelliDrive support assistant. How can I help you today?",
         },
     ]);
+
+    const handleKeyPress = async (event: React.KeyboardEvent) => {
+        if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault();
+            await sendMessage();
+        }
+    };
 
     const sendMessage = async () => {
         if (!user) return;
@@ -122,6 +129,7 @@ export default function Chat() {
                         fullWidth
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
+                        onKeyUp={handleKeyPress}
                     />
                     <Button variant="contained" onClick={sendMessage}>
                         Send
