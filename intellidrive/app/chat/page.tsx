@@ -92,7 +92,7 @@ export default function Chat() {
     return (
         <Box
             width="100vw"
-            height="100vh"
+            height="90vh"
             display="flex"
             flexDirection="column"
             justifyContent="center"
@@ -100,9 +100,11 @@ export default function Chat() {
         >
             <Stack
                 direction="column"
-                width="500px"
+                width="600px"
                 height="700px"
-                border="1px solid black"
+                border={1}
+                borderColor={"grey.400"}
+                borderRadius={2}
                 p={2}
                 spacing={3}
                 mt={3}
@@ -127,10 +129,14 @@ export default function Chat() {
                             <Box
                                 bgcolor={
                                     message.role === "assistant"
-                                        ? "primary.main"
-                                        : "secondary.main"
+                                        ? "grey.200"
+                                        : "primary.main"
                                 }
-                                color="white"
+                                color={
+                                    message.role === "assistant"
+                                        ? "black"
+                                        : "white"
+                                }
                                 borderRadius={5}
                                 p={3}
                             >
