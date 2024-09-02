@@ -12,8 +12,10 @@ import React, { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import { useUser } from "@clerk/nextjs";
+import { useTheme } from "next-themes";
 
 export default function Chat() {
+    const { theme } = useTheme();
     const { user } = useUser();
     const [message, setMessage] = useState("");
     const [messages, setMessages] = useState([
@@ -102,13 +104,14 @@ export default function Chat() {
                 <Stack
                     direction="column"
                     width="600px"
-                    height="700px"
-                    border={1}
-                    borderColor={"grey.400"}
+                    maxHeight="95%"
+                    boxShadow={2}
                     borderRadius={2}
+                    border={theme === "dark" ? 1 : 0}
+                    borderColor="grey.600"
                     p={2}
                     spacing={3}
-                    mt={3}
+                    my={3}
                 >
                     <Stack
                         direction="column"
@@ -130,10 +133,13 @@ export default function Chat() {
                                 <Box
                                     bgcolor={
                                         message.role === "assistant"
-                                            ? "grey.200"
+                                            ? theme === "dark"
+                                                ? "grey.800"
+                                                : "grey.200"
                                             : "primary.main"
                                     }
                                     color={
+                                        theme === "light" &&
                                         message.role === "assistant"
                                             ? "black"
                                             : "white"
@@ -157,6 +163,10 @@ export default function Chat() {
                             value={message}
                             onChange={(e) => setMessage(e.target.value)}
                             onKeyUp={handleKeyPress}
+                            sx={{
+                                bgcolor: theme === "dark" ? "grey.400" : "none",
+                                borderRadius: 2,
+                            }}
                             slotProps={{
                                 input: {
                                     endAdornment: (
