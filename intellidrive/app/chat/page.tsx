@@ -103,7 +103,7 @@ export default function Chat() {
             >
                 <Stack
                     direction="column"
-                    width="600px"
+                    width="auto"
                     height="85vh"
                     boxShadow={2}
                     borderRadius={2}
@@ -112,6 +112,7 @@ export default function Chat() {
                     p={2}
                     spacing={3}
                     my={2}
+                    mx={2}
                 >
                     <Stack
                         direction="column"
