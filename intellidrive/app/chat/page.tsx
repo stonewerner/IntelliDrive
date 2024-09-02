@@ -104,14 +104,14 @@ export default function Chat() {
                 <Stack
                     direction="column"
                     width="600px"
-                    maxHeight="95%"
+                    height="85vh"
                     boxShadow={2}
                     borderRadius={2}
                     border={theme === "dark" ? 1 : 0}
                     borderColor="grey.600"
                     p={2}
                     spacing={3}
-                    my={3}
+                    my={2}
                 >
                     <Stack
                         direction="column"
