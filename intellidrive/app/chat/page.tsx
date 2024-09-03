@@ -104,7 +104,7 @@ export default function Chat() {
         <div className="border-t">
             <Box
                 width="100vw"
-                height="90vh"
+                height={{ xs: "85vh", md: "90vh" }}
                 display="flex"
                 flexDirection="column"
                 justifyContent="center"
@@ -113,11 +113,11 @@ export default function Chat() {
                 <Stack
                     direction="column"
                     width={{ xs: "95vw", sm: "90vw", md: "800px" }}
-                    height="85vh"
+                    height={{ xs: "80vh", md: "85vh" }}
                     boxShadow={2}
                     borderRadius={2}
                     border={1}
-                    borderColor="grey.400"
+                    borderColor="grey.300"
                     p={2}
                     spacing={3}
                     my={2}
