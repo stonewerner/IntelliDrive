@@ -14,7 +14,7 @@ import {
 import { db, storage } from "@/firebase";
 import { getDownloadURL, ref, uploadBytes } from "@firebase/storage";
 import toast from "react-hot-toast";
-import { extractFromPdf } from "@/utils/text_extraction";
+import { extractFileText } from "@/utils/textExtraction";
 
 interface FileMetadata {
     downloadUrl: string;
@@ -57,20 +57,6 @@ function Dropzone() {
         } else {
             console.error("Failed to upload to Pinecone");
         }
-    };
-
-    const extractFileText = async (file: File) => {
-        let fileText;
-        if (file.type === "application/pdf") {
-            fileText = await extractFromPdf(file);
-        } else if (file.type === "text/plain") {
-            fileText = await file.text();
-        } else {
-            console.log("Unsupported file format. Skipping text extraction...");
-            return null;
-        }
-
-        return fileText;
     };
 
     const uploadFileToFirebase = async (selectedFile: File) => {

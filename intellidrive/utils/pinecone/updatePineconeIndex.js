@@ -23,11 +23,12 @@ export const updatePineconeIndex = async (namespace, fileMetadata) => {
     for (let i = 0; i < chunks.length; i++) {
         const chunk = chunks[i];
         const vector = {
-            id: fileMetadata.fileId,
+            id: `${fileMetadata.fileId}_${i}`,
             values: embeddingsArrays[i],
             metadata: {
                 ...chunk.metadata,
                 fileName: fileMetadata.fileName,
+                firebaseFileId: fileMetadata.fileId,
                 downloadUrl: fileMetadata.downloadUrl,
                 pageContent: chunk.pageContent,
                 loc: JSON.stringify(chunk.metadata.loc),
