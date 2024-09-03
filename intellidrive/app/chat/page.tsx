@@ -12,11 +12,10 @@ import React, { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import { useUser } from "@clerk/nextjs";
-import { useTheme } from "next-themes";
 
 export default function Chat() {
-    const { theme } = useTheme();
     const { user } = useUser();
+    const messageEndRef = useRef<HTMLDivElement | null>(null);
     const [message, setMessage] = useState("");
     const [messages, setMessages] = useState([
         {
@@ -26,14 +25,28 @@ export default function Chat() {
         },
     ]);
 
-    const handleKeyPress = async (event: React.KeyboardEvent) => {
-        if (event.key === "Enter" && !event.shiftKey) {
-            event.preventDefault();
-            await sendMessage();
-        }
+    const scrollToBottom = () => {
+        console.log("Scrolling....");
+        messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
-    const sendMessage = async () => {
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
+
+    const getBubbleBgColor = (role: string) => {
+        return role === "assistant" ? "grey.200" : "primary.main";
+    };
+
+    const getTextColor = (role: string) => {
+        return role === "assistant" ? "black" : "white";
+    };
+
+    const getMessageAlignment = (role: string) => {
+        return role === "assistant" ? "flex-start" : "flex-end";
+    };
+
+    const handleSendMessage = async () => {
         if (!user) return;
 
         setMessages((messages) => [
@@ -80,16 +93,12 @@ export default function Chat() {
         });
     };
 
-    const messageEndRef = useRef<HTMLDivElement | null>(null);
-
-    const scrollToBottom = () => {
-        console.log("Scrolling....");
-        messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const handleKeyPress = async (event: React.KeyboardEvent) => {
+        if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault();
+            await handleSendMessage();
+        }
     };
-
-    useEffect(() => {
-        scrollToBottom();
-    }, [messages]);
 
     return (
         <div className="border-t">
@@ -107,8 +116,8 @@ export default function Chat() {
                     height="85vh"
                     boxShadow={2}
                     borderRadius={2}
-                    border={theme === "dark" ? 1 : 0}
-                    borderColor="grey.600"
+                    border={1}
+                    borderColor="grey.400"
                     p={2}
                     spacing={3}
                     my={2}
@@ -121,39 +130,30 @@ export default function Chat() {
                         overflow="auto"
                         maxHeight="100%"
                     >
-                        {messages.map((message, index) => (
-                            <Box
-                                key={index}
-                                display="flex"
-                                justifyContent={
-                                    message.role === "assistant"
-                                        ? "flex-start"
-                                        : "flex-end"
-                                }
-                            >
+                        {messages.map((message, index) => {
+                            return (
                                 <Box
-                                    bgcolor={
-                                        message.role === "assistant"
-                                            ? theme === "dark"
-                                                ? "grey.800"
-                                                : "grey.200"
-                                            : "primary.main"
-                                    }
-                                    color={
-                                        theme === "light" &&
-                                        message.role === "assistant"
-                                            ? "black"
-                                            : "white"
-                                    }
-                                    borderRadius={5}
-                                    p={3}
+                                    key={index}
+                                    display="flex"
+                                    justifyContent={getMessageAlignment(
+                                        message.role
+                                    )}
                                 >
-                                    <ReactMarkdown rehypePlugins={[rehypeRaw]}>
-                                        {message.content}
-                                    </ReactMarkdown>
+                                    <Box
+                                        bgcolor={getBubbleBgColor(message.role)}
+                                        color={getTextColor(message.role)}
+                                        borderRadius={5}
+                                        p={3}
+                                    >
+                                        <ReactMarkdown
+                                            rehypePlugins={[rehypeRaw]}
+                                        >
+                                            {message.content}
+                                        </ReactMarkdown>
+                                    </Box>
                                 </Box>
-                            </Box>
-                        ))}
+                            );
+                        })}
                         <div ref={messageEndRef} />
                     </Stack>
                     <Stack direction="row" spacing={2}>
@@ -165,7 +165,7 @@ export default function Chat() {
                             onChange={(e) => setMessage(e.target.value)}
                             onKeyUp={handleKeyPress}
                             sx={{
-                                bgcolor: theme === "dark" ? "grey.400" : "none",
+                                bgcolor: "grey.200",
                                 borderRadius: 2,
                             }}
                             slotProps={{
@@ -179,7 +179,9 @@ export default function Chat() {
                                                 right: 5,
                                             }}
                                         >
-                                            <IconButton onClick={sendMessage}>
+                                            <IconButton
+                                                onClick={handleSendMessage}
+                                            >
                                                 <Send
                                                     sx={{
                                                         transform:
