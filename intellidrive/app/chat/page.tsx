@@ -6,12 +6,21 @@ import {
     TextField,
     InputAdornment,
     IconButton,
+    Button,
 } from "@mui/material";
 import { Send } from "@mui/icons-material";
 import React, { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import { useUser } from "@clerk/nextjs";
+import {
+    collection,
+    doc,
+    getDoc,
+    setDoc,
+    writeBatch,
+} from "firebase/firestore";
+import { db } from "@/firebase";
 
 export default function Chat() {
     const { user } = useUser();
@@ -31,6 +40,23 @@ export default function Chat() {
     };
 
     useEffect(() => {
+        async function loadMessages() {
+            if (!user) return;
+
+            const allUsersColRef = collection(db, "users");
+            const userDocRef = doc(allUsersColRef, user.id);
+            const userDoc = await getDoc(userDocRef);
+            if (userDoc.exists()) {
+                const prevMessages = userDoc.data().messages || [];
+                setMessages([...messages, ...prevMessages]);
+            } else {
+                await setDoc(userDocRef, { messages: [] });
+            }
+        }
+        loadMessages();
+    }, [user]);
+
+    useEffect(() => {
         scrollToBottom();
     }, [messages]);
 
@@ -46,8 +72,26 @@ export default function Chat() {
         return role === "assistant" ? "flex-start" : "flex-end";
     };
 
-    const handleSendMessage = async () => {
+    const updateMessagesInFirebase = async (
+        messages: { role: string; content: string }[]
+    ) => {
         if (!user) return;
+
+        try {
+            const allUsersColRef = collection(db, "users");
+            const userDocRef = doc(allUsersColRef, user.id);
+            const batch = writeBatch(db);
+
+            batch.update(userDocRef, { messages: messages });
+            await batch.commit();
+        } catch (error) {
+            console.error("Error saving messages:", error);
+            alert("An error occurred while user messages.");
+        }
+    };
+
+    const handleSendMessage = async () => {
+        if (!user || !message.trim()) return;
 
         setMessages((messages) => [
             ...messages,
@@ -91,6 +135,8 @@ export default function Chat() {
                 return reader.read().then(processText);
             });
         });
+
+        await updateMessagesInFirebase(messages.slice(1));
     };
 
     const handleKeyPress = async (event: React.KeyboardEvent) => {
@@ -98,6 +144,11 @@ export default function Chat() {
             event.preventDefault();
             await handleSendMessage();
         }
+    };
+
+    const handleClearChat = async () => {
+        await updateMessagesInFirebase([]);
+        window.location.reload();
     };
 
     return (
@@ -156,7 +207,7 @@ export default function Chat() {
                         })}
                         <div ref={messageEndRef} />
                     </Stack>
-                    <Stack direction="row" spacing={2}>
+                    <Stack direction="row" spacing={1}>
                         <TextField
                             label="Message"
                             fullWidth
@@ -194,6 +245,14 @@ export default function Chat() {
                                 },
                             }}
                         />
+                        <Button
+                            variant="outlined"
+                            color="error"
+                            onClick={handleClearChat}
+                            size="small"
+                        >
+                            Clear
+                        </Button>
                     </Stack>
                 </Stack>
             </Box>

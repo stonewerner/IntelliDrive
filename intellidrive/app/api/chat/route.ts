@@ -26,11 +26,20 @@ You are a document-savvy AI assistant. Your primary functions are:
 
 Remember: Don't volunteer document details unprompted. Always use the formatting shown above with <br><br> between sentences. This is essential for clarity and readability.`;
 
+interface Message {
+    role: string;
+    content: string;
+}
+
 export async function POST(req: NextRequest) {
     try {
         const { messages, namespace } = await req.json();
 
-        const text = messages[messages.length - 1].content;
+        const userMessages = messages.filter((m: Message) => m.role === "user");
+        const messagesToUse = userMessages.slice(-10);
+        const text = messagesToUse
+            .map((m: Message) => m.content.trim())
+            .join(" ");
         const res = await queryPineconeVectorStore(namespace, text);
 
         let resultString = "";
