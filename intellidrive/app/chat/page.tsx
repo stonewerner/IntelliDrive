@@ -233,26 +233,21 @@ export default function Chat() {
                                             <IconButton
                                                 onClick={handleSendMessage}
                                             >
-                                                <Send
-                                                    sx={{
-                                                        transform:
-                                                            "rotate(-45deg)",
-                                                    }}
-                                                />
+                                                <Send />
                                             </IconButton>
+                                            <Button
+                                                color="error"
+                                                variant="contained"
+                                                size="small"
+                                                onClick={handleClearChat}
+                                            >
+                                                Clear
+                                            </Button>
                                         </InputAdornment>
                                     ),
                                 },
                             }}
                         />
-                        <Button
-                            variant="outlined"
-                            color="error"
-                            onClick={handleClearChat}
-                            size="small"
-                        >
-                            Clear
-                        </Button>
                     </Stack>
                 </Stack>
             </Box>
