@@ -9,6 +9,7 @@ import { Input } from './ui/input';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/firebase';
 import toast, { Toaster } from 'react-hot-toast';
+import { useFileOperations } from './FileOperations';
 
 function RenameModal() {
     const { user } = useUser();

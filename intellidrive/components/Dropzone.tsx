@@ -9,7 +9,11 @@ import { db, storage } from '@/firebase';
 import { getDownloadURL, ref, uploadBytes } from '@firebase/storage';
 import toast from 'react-hot-toast';
 
-function Dropzone() {
+interface DropzoneProps {
+  isPersonal: boolean;
+}
+
+function Dropzone({ isPersonal }: DropzoneProps) {
     const maxSize = 20971520; //20MB
 
     const [loading, setLoading] = useState(false);
@@ -35,7 +39,9 @@ function Dropzone() {
         setLoading(true);
         const toastId = toast.loading("Uploading...");
 
-        const docRef = await addDoc(collection(db, organization ? `organizations/${organization.id}/files` : `users/${user.id}/files`), {
+        const collectionPath = isPersonal ? `users/${user.id}/files` : `organizations/${organization?.id}/files`;
+
+        const docRef = await addDoc(collection(db, collectionPath), {
             userId: user.id,
             filename: selectedFile.name,
             fullName: user.fullName,
@@ -44,7 +50,7 @@ function Dropzone() {
             type: selectedFile.type,
             size: selectedFile.size,
         })
-        const imageRef = ref(storage, `${organization ? `organizations/${organization.id}` : `users/${user.id}`}/${docRef.id}`)
+        const imageRef = ref(storage, `${isPersonal ? `users/${user.id}` : `organizations/${organization?.id}`}/${docRef.id}`)
         //const imageRef = ref(storage, `users/${user.id}/files/${docRef.id}`);
         uploadBytes(imageRef, selectedFile).then(async (snapshot) => {
             const downloadURL = await getDownloadURL(imageRef);

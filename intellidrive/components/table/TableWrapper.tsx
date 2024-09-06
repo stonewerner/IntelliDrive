@@ -10,10 +10,16 @@ import { useCollection } from "react-firebase-hooks/firestore";
 import { collection, orderBy, query } from 'firebase/firestore';
 import { db } from '@/firebase';
 import { Skeleton } from "@/components/ui/skeleton"
+import { useFileOperations } from '../FileOperations';
+
+interface TableWrapperProps {
+  skeletonFiles: FileType[];
+  isPersonal: boolean;
+}
 
 
 
-function TableWrapper({ skeletonFiles }: { skeletonFiles: FileType[] }) {
+function TableWrapper({ skeletonFiles, isPersonal }: TableWrapperProps) {
   const { user } = useUser();
   const [initialFiles, setInitialFiles] = useState<FileType[]>([]);
   const [sort, setSort] = useState<"asc" | "desc">("desc");
