@@ -16,8 +16,6 @@ interface TableWrapperProps {
   isPersonal: boolean;
 }
 
-
-
 function TableWrapper({ skeletonFiles, isPersonal }: TableWrapperProps) {
   const { user } = useUser();
   const { organization } = useOrganization();
@@ -38,37 +36,30 @@ function TableWrapper({ skeletonFiles, isPersonal }: TableWrapperProps) {
       : null
   );
 
-    useEffect(() => {
-        if (!docs) return;
+  useEffect(() => {
+    if (!docs) return;
 
-        const files = docs.docs.map((doc) => ({
-            id: doc.id,
-            filename: doc.data().filename || doc.id,
-            timestamp:
-                new Date(doc.data().timestamp?.seconds * 1000) || undefined,
-            fullName: doc.data().fullName,
-            downloadURL: doc.data().downloadURL,
-            type: doc.data().type,
-            size: doc.data().size,
-        }));
+    const files = docs.docs.map((doc) => ({
+      id: doc.id,
+      filename: doc.data().filename || doc.id,
+      timestamp:
+        new Date(doc.data().timestamp?.seconds * 1000) || undefined,
+      fullName: doc.data().fullName,
+      downloadURL: doc.data().downloadURL,
+      type: doc.data().type,
+      size: doc.data().size,
+    }));
 
-        setInitialFiles(files);
-    }, [docs]);
+    setInitialFiles(files);
+  }, [docs]);
 
-  if (!user && isPersonal) {
-    return <div>Error: User data not available</div>;
-  }
-
-  if (!organization && !isPersonal) {
-    return <div>Error: Organization data not available</div>;
-  }
+  
 
   if (error) {
     return <div>Error: {error.message}</div>;
   }
 
-
-  if (docs?.docs.length === undefined)
+  if (docs?.docs.length === undefined) {
     return (
       <div className="flex flex-col">
         <Button variant={"outline"} className="ml-auto w-36 h-10 mb-5">
@@ -81,23 +72,11 @@ function TableWrapper({ skeletonFiles, isPersonal }: TableWrapperProps) {
               <Skeleton className="h-12 w-12" />
               <Skeleton className="h-12 w-full" />
             </div>
-        )));
-
-    return (
-        <div className="flex flex-col space-y-5 pb-10">
-            <Button
-                className="ml-auto w-fit"
-                variant={"outline"}
-                onClick={() => setSort(sort === "desc" ? "asc" : "desc")}
-            >
-                Sort By {sort === "desc" ? "Newest" : "Oldest"}
-            </Button>
-
-            <DataTable columns={columns} data={initialFiles} />
+          ))}
         </div>
+      </div>
     );
-
-    
+  }
 
   return (
     <div className="flex flex-col space-y-5 pb-10">
@@ -105,12 +84,13 @@ function TableWrapper({ skeletonFiles, isPersonal }: TableWrapperProps) {
         className="ml-auto w-fit"
         variant={"outline"}
         onClick={() => setSort(sort === "desc" ? "asc" : "desc")}
-      >Sort By {sort === "desc" ? "Newest" : "Oldest"}</Button>
+      >
+        Sort By {sort === "desc" ? "Newest" : "Oldest"}
+      </Button>
 
       <DataTable columns={columns} data={initialFiles} isPersonal={isPersonal} />
-
     </div>
   )
-};
+}
 
 export default TableWrapper;

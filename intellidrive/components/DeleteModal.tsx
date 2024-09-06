@@ -1,15 +1,19 @@
-"use client";
+'use client'
 
-import React from "react";
+import React from 'react'
+import { Copy } from "lucide-react"
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/button"
 import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog";
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { useAppStore } from "@/store/store";
 import { useUser } from '@clerk/nextjs'
 import { deleteObject, ref } from 'firebase/storage'
@@ -24,28 +28,30 @@ interface DeleteModalProps {
 
 export function DeleteModal({ isPersonal }: DeleteModalProps) {
     const { user } = useUser();
-    const [isDeleteModalOpen, setIsDeleteModalOpen, fileId] = useAppStore(
-        (state) => [
-            state.isDeleteModalOpen,
-            state.setIsDeleteModalOpen,
-            state.fileId,
-            state.setFileId,
-        ]
-    );
-
+    const [isDeleteModalOpen, setIsDeleteModalOpen, fileId, setFileId] = 
+    useAppStore((state) => [
+        state.isDeleteModalOpen,
+        state.setIsDeleteModalOpen,
+        state.fileId,
+        state.setFileId,
+    ]);
 
     const { deleteFile } = useFileOperations();
 
     async function handleDelete() {
       if (!fileId) return;
+      if (!user) {
+        toast.error("User not authenticated. Please log in and try again.");
+        return;
+      }
       const toastId = toast.loading("Deleting...");
   
       try {
         await deleteFile(fileId, isPersonal);
         await fetch("/api/pinecone/delete_doc", {
-          method: "POST",
-          body: JSON.stringify({ namespace: user.id, fileId }),
-      });
+                method: "POST",
+                body: JSON.stringify({ namespace: user.id, fileId }),
+            });
         toast.success("Deleted Successfully", {
           id: toastId,
         });
@@ -68,24 +74,23 @@ export function DeleteModal({ isPersonal }: DeleteModalProps) {
             setIsDeleteModalOpen(isOpen);
         }}
         >
-            <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                    <DialogTitle>Are you sure you want to delete?</DialogTitle>
-                    <DialogDescription>
-                        This action cannot be undone. This will permanently
-                        delete your file!
-                    </DialogDescription>
-                </DialogHeader>
-                <div className="flex space-x-2 py-3">
-                    <Button
-                        size="sm"
-                        className="px-3 flex-1"
-                        variant={"ghost"}
-                        onClick={() => setIsDeleteModalOpen(false)}
-                    >
-                        <span className="sr-only">Cancel</span>
-                        <span>Cancel</span>
-                    </Button>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Are you sure you want to delete?</DialogTitle>
+          <DialogDescription>
+            This action cannot be undone. This will permanently delete your file!
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex space-x-2 py-3">
+            <Button
+                size="sm"
+                className="px-3 flex-1"
+                variant={"ghost"}
+                onClick={() => setIsDeleteModalOpen(false)}
+                >
+                    <span className="sr-only">Cancel</span>
+                    <span>Cancel</span>
+            </Button>
 
             <Button
                 type="submit"

@@ -17,7 +17,7 @@ interface RenameModalProps {
 function RenameModal({ isPersonal }: RenameModalProps) {
     const { user } = useUser();
     const [input, setInput] = useState("");
-    const [isRenameModalOpen, setIsRenameModalOpen, fileId, filename] =
+    const [isRenameModalOpen, setIsRenameModalOpen, fileId, filename] = 
         useAppStore((state) => [
             state.isRenameModalOpen,
             state.setIsRenameModalOpen,
@@ -47,22 +47,12 @@ function RenameModal({ isPersonal }: RenameModalProps) {
           }
         };
 
-        await updateDoc(doc(db, "users", user.id, "files", fileId), {
-            filename: input,
-        });
-        toast.success("Renamed Successfully", {
-            id: toastId,
-        });
-        setInput("");
-        setIsRenameModalOpen(false);
-    };
-
-    return (
-        <Dialog
-            open={isRenameModalOpen}
-            onOpenChange={(isOpen) => {
-                setIsRenameModalOpen(isOpen);
-            }}
+  return (
+    <Dialog
+        open={isRenameModalOpen}
+        onOpenChange={(isOpen) => {
+            setIsRenameModalOpen(isOpen);
+        }}
         >
             <DialogContent>
                 <DialogHeader>
@@ -76,7 +66,7 @@ function RenameModal({ isPersonal }: RenameModalProps) {
                             if (e.key === "Enter") {
                                 handleRename();
                             }
-                        }}
+                        }} 
                     />
 
                     <div className="flex justify-end space-x-2 py-3">
@@ -101,8 +91,8 @@ function RenameModal({ isPersonal }: RenameModalProps) {
                     </div>
                 </DialogHeader>
             </DialogContent>
-        </Dialog>
-    );
+    </Dialog>
+  );
 }
 
-export default RenameModal;
+export default RenameModal
