@@ -29,7 +29,7 @@ async function DashboardServer() {
 
   const user = userId ? await clerkClient.users.getUser(userId) : null;
 
-  return <DashboardClient personalFiles={personalFiles} organizationFiles={organizationFiles} userId={userId} orgId={orgId} />;
+  return <DashboardClient personalFiles={personalFiles} organizationFiles={organizationFiles} userId={userId || null} orgId={orgId || null} />;
 }
 
 export default DashboardServer;

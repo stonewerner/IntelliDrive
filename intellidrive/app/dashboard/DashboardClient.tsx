@@ -20,6 +20,10 @@ function DashboardClient({ personalFiles, organizationFiles, userId, orgId }: Da
 
   const files = isPersonal ? personalFiles : organizationFiles;
 
+  if (!userId && !orgId) {
+    return <div>Error: No user or organization found.</div>;
+  }
+
   return (
     <div className="border-t">
       <Dropzone isPersonal={isPersonal} />
