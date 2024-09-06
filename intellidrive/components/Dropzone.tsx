@@ -37,14 +37,16 @@ function Dropzone({ isPersonal }: DropzoneProps) {
     const handleDrop = async (acceptedFiles: File[]) => {
         for (const file of acceptedFiles) {
             const firebaseFileInfo = await uploadFileToFirebase(file);
-            const fileText = await extractFileText(file);
-            if (fileText && firebaseFileInfo) {
-                const fileMetadata = {
-                    ...firebaseFileInfo,
-                    fileText,
-                    fileName: file.name,
-                };
-                await uploadToPinecone(fileMetadata);
+            if (firebaseFileInfo) {
+                const fileText = await extractFileText(file);
+                if (fileText) {
+                    const fileMetadata = {
+                        ...firebaseFileInfo,
+                        fileText,
+                        fileName: file.name,
+                    };
+                    await uploadToPinecone(fileMetadata);
+                }
             }
         }
     };
@@ -73,29 +75,39 @@ function Dropzone({ isPersonal }: DropzoneProps) {
 
         const collectionPath = isPersonal ? `users/${user.id}/files` : `organizations/${organization?.id}/files`;
 
-        const docRef = await addDoc(collection(db, collectionPath), {
-            userId: user.id,
-            filename: selectedFile.name,
-            fullName: user.fullName,
-            profileImg: user.imageUrl,
-            timestamp: serverTimestamp(),
-            type: selectedFile.type,
-            size: selectedFile.size,
-        });
-        const fileId = docRef.id;
-        const imageRef = ref(storage, `${isPersonal ? `users/${user.id}` : `organizations/${organization?.id}`}/${docRef.id}`)
-        const snapshot = await uploadBytes(imageRef, selectedFile);
-        const downloadUrl = await getDownloadURL(snapshot.ref);
-        await updateDoc(doc(db, "users", user.id, "files", docRef.id), {
-            downloadURL: downloadUrl,
-
-        });
-
-        toast.success("Uploaded Successfully", {
-            id: toastId,
-        });
-        setLoading(false);
-        return { downloadUrl, fileId };
+        try {
+            const docRef = await addDoc(collection(db, collectionPath), {
+                userId: user.id,
+                filename: selectedFile.name,
+                fullName: user.fullName,
+                profileImg: user.imageUrl,
+                timestamp: serverTimestamp(),
+                type: selectedFile.type,
+                size: selectedFile.size,
+            });
+            const fileId = docRef.id;
+            const imageRef = ref(storage, `${isPersonal ? `users/${user.id}` : `organizations/${organization?.id}`}/files/${docRef.id}`);
+            const snapshot = await uploadBytes(imageRef, selectedFile);
+            const downloadUrl = await getDownloadURL(snapshot.ref);
+    
+            // Update the document in the correct collection
+            await updateDoc(doc(db, collectionPath, docRef.id), {
+                downloadURL: downloadUrl,
+            });
+    
+            toast.success("Uploaded Successfully", {
+                id: toastId,
+            });
+            setLoading(false);
+            return { downloadUrl, fileId };
+        } catch (error) {
+            console.error("Error uploading file:", error);
+            toast.error("Upload failed", {
+                id: toastId,
+            });
+            setLoading(false);
+            return null;
+        }
     };
 
     return (
