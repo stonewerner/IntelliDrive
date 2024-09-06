@@ -20,8 +20,13 @@ import { deleteObject, ref } from 'firebase/storage'
 import { db, storage } from '@/firebase'
 import { deleteDoc, doc } from 'firebase/firestore'
 import toast, { Toaster } from 'react-hot-toast';
+import { useFileOperations } from './FileOperations'
 
-export function DeleteModal() {
+interface DeleteModalProps {
+  isPersonal: boolean;
+}
+
+export function DeleteModal({ isPersonal }: DeleteModalProps) {
     const { user } = useUser();
     const [isDeleteModalOpen, setIsDeleteModalOpen, fileId, setFileId] = 
     useAppStore((state) => [
@@ -31,33 +36,27 @@ export function DeleteModal() {
         state.setFileId,
     ]);
 
-    async function deleteFile() {
-        if (!user || ! fileId) return;
-        const toastId = toast.loading("Deleting...");
+    const { deleteFile } = useFileOperations();
 
-        const fileRef = ref(storage, `users/${user.id}/files/${fileId}`);
-
-        try {
-            deleteObject(fileRef).then(async () => {
-    
-                deleteDoc(doc(db, "users", user.id, "files", fileId)).then(() => {
-                    toast.success("Deleted Successfully", {
-                        id: toastId,
-                    });
-                });
-            }).finally(() => {
-                setIsDeleteModalOpen(false);
-            });
-        } catch (error) {
-            console.log("something went wrong with deleting.")
-            console.log(error);
-            setIsDeleteModalOpen(false);
-            toast.error("Error deleting", {
-                id: toastId,
-            });
-        }
+    async function handleDelete() {
+      if (!fileId) return;
+      const toastId = toast.loading("Deleting...");
+  
+      try {
+        await deleteFile(fileId, isPersonal);
+        toast.success("Deleted Successfully", {
+          id: toastId,
+        });
+      } catch (error) {
+        console.error("Error deleting file:", error);
+        toast.error("Error deleting file", {
+          id: toastId,
+        });
+      } finally {
+        setIsDeleteModalOpen(false);
+        setFileId("");
+      }
     }
-
 
 
   return (
@@ -90,10 +89,10 @@ export function DeleteModal() {
                 size="sm"
                 className="px-3 flex-1"
                 variant={"destructive"}
-                onClick={() => deleteFile()}
+                onClick={handleDelete}
                 >
-                    <span className="sr-only">Delete</span>
-                    <span>Delete</span>
+                <span className="sr-only">Delete</span>
+                <span>Delete</span>
             </Button>
         </div>
       </DialogContent>

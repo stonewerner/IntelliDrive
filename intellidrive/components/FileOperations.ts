@@ -1,33 +1,31 @@
 import { db, storage } from "@/firebase";
-import { DocumentData, deleteDoc, doc, updateDoc } from "firebase/firestore";
-import { deleteObject, ref } from "firebase/storage";
+import { doc, updateDoc, deleteDoc } from "firebase/firestore";
+import { ref, deleteObject } from "firebase/storage";
 import { useUser, useOrganization } from "@clerk/nextjs";
 
-export const useFileOperations = (isPersonal: boolean) => {
+export const useFileOperations = () => {
   const { user } = useUser();
   const { organization } = useOrganization();
 
-  const getCollectionPath = () => {
+  const getCollectionPath = (isPersonal: boolean) => {
     return isPersonal ? `users/${user?.id}/files` : `organizations/${organization?.id}/files`;
   };
 
-  const renameFile = async (id: string, filename: string) => {
-    const collectionPath = getCollectionPath();
-    await updateDoc(doc(db, collectionPath, id), {
-      filename: filename,
+  const renameFile = async (fileId: string, newFilename: string, isPersonal: boolean) => {
+    if (!user) return;
+    const collectionPath = getCollectionPath(isPersonal);
+    await updateDoc(doc(db, collectionPath, fileId), {
+      filename: newFilename,
     });
   };
 
-  const deleteFile = async (id: string) => {
-    const collectionPath = getCollectionPath();
-    await deleteDoc(doc(db, collectionPath, id));
-    const fileRef = ref(storage, `${isPersonal ? `users/${user?.id}` : `organizations/${organization?.id}`}/${id}`);
+  const deleteFile = async (fileId: string, isPersonal: boolean) => {
+    if (!user) return;
+    const collectionPath = getCollectionPath(isPersonal);
+    await deleteDoc(doc(db, collectionPath, fileId));
+    const fileRef = ref(storage, `${isPersonal ? `users/${user.id}` : `organizations/${organization?.id}`}/files/${fileId}`);
     await deleteObject(fileRef);
   };
 
-  const downloadFile = (downloadURL: string) => {
-    window.open(downloadURL, '_blank');
-  };
-
-  return { renameFile, deleteFile, downloadFile };
+  return { renameFile, deleteFile };
 };

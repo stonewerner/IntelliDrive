@@ -1,11 +1,10 @@
 "use client"
-import React from 'react'
+import React, {useState, useEffect} from 'react'
 import { FileType } from "@/typings";
 import { Button } from '../ui/button';
 import { DataTable } from "./Table";
 import { columns } from "./columns";
-import { useUser } from '@clerk/nextjs';
-import { useState, useEffect } from "react";
+import { useUser, useOrganization } from '@clerk/nextjs';
 import { useCollection } from "react-firebase-hooks/firestore";
 import { collection, orderBy, query } from 'firebase/firestore';
 import { db } from '@/firebase';
@@ -21,15 +20,22 @@ interface TableWrapperProps {
 
 function TableWrapper({ skeletonFiles, isPersonal }: TableWrapperProps) {
   const { user } = useUser();
+  const { organization } = useOrganization();
   const [initialFiles, setInitialFiles] = useState<FileType[]>([]);
   const [sort, setSort] = useState<"asc" | "desc">("desc");
 
   const [docs, loading, error] = useCollection(
-    user &&
-      query(
-        collection(db, "users", user.id, "files"),
-        orderBy("timestamp", sort)
-      )
+    (user && isPersonal) || (organization && !isPersonal)
+      ? query(
+          collection(
+            db, 
+            isPersonal 
+              ? `users/${user?.id}/files` 
+              : `organizations/${organization?.id}/files`
+          ),
+          orderBy("timestamp", sort)
+        )
+      : null
   );
 
   useEffect(() => {
@@ -47,6 +53,22 @@ function TableWrapper({ skeletonFiles, isPersonal }: TableWrapperProps) {
 
     setInitialFiles(files)
   }, [docs])
+
+  if (!user && isPersonal) {
+    return <div>Error: User data not available</div>;
+  }
+
+  if (!organization && !isPersonal) {
+    return <div>Error: Organization data not available</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  }
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   if (docs?.docs.length === undefined)
     return (
@@ -74,6 +96,8 @@ function TableWrapper({ skeletonFiles, isPersonal }: TableWrapperProps) {
       </div>
     );
 
+    
+
   return (
     <div className="flex flex-col space-y-5 pb-10">
       <Button
@@ -82,7 +106,7 @@ function TableWrapper({ skeletonFiles, isPersonal }: TableWrapperProps) {
         onClick={() => setSort(sort === "desc" ? "asc" : "desc")}
       >Sort By {sort === "desc" ? "Newest" : "Oldest"}</Button>
 
-      <DataTable columns={columns} data={initialFiles} />
+      <DataTable columns={columns} data={initialFiles} isPersonal={isPersonal} />
 
     </div>
   )

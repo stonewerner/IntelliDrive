@@ -15,7 +15,7 @@ interface AppState {
 }
 
 export const useAppStore = create<AppState>()((set) => ({
-    fileId: null,
+    fileId: "",
     setFileId: (fileId: string) => set((state) => ({ fileId })),
 
     filename: "",

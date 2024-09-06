@@ -1,7 +1,6 @@
 'use client'
-import React from 'react'
+import React, { useState } from 'react'
 import { useUser } from '@clerk/nextjs'
-import { useState } from "react";
 import { useAppStore } from '@/store/store';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 import { Button } from './ui/button';
@@ -11,7 +10,11 @@ import { db } from '@/firebase';
 import toast, { Toaster } from 'react-hot-toast';
 import { useFileOperations } from './FileOperations';
 
-function RenameModal() {
+interface RenameModalProps {
+    isPersonal: boolean;
+  }
+
+function RenameModal({ isPersonal }: RenameModalProps) {
     const { user } = useUser();
     const [input, setInput] = useState("");
     const [isRenameModalOpen, setIsRenameModalOpen, fileId, filename] = 
@@ -22,19 +25,26 @@ function RenameModal() {
             state.filename,
         ]);
     
-        const renameFile = async () => {
-            if (!user || !fileId) return;
+        const { renameFile } = useFileOperations();
 
-            const toastId = toast.loading("Renaming...");
-
-            await updateDoc(doc(db, "users", user.id, "files", fileId), {
-                filename: input,
-            });
+        const handleRename = async () => {
+          if (!fileId) return;
+      
+          const toastId = toast.loading("Renaming...");
+      
+          try {
+            await renameFile(fileId, input, isPersonal);
             toast.success("Renamed Successfully", {
-                id: toastId,
+              id: toastId,
             });
             setInput("");
             setIsRenameModalOpen(false);
+          } catch (error) {
+            console.error("Error renaming file:", error);
+            toast.error("Error renaming file", {
+              id: toastId,
+            });
+          }
         };
 
   return (
@@ -54,7 +64,7 @@ function RenameModal() {
                         onChange={(e) => setInput(e.target.value)}
                         onKeyDownCapture={(e) => {
                             if (e.key === "Enter") {
-                                renameFile();
+                                handleRename();
                             }
                         }} 
                     />
@@ -73,7 +83,7 @@ function RenameModal() {
                             type="submit"
                             size="sm"
                             className="px-3"
-                            onClick={() => renameFile()}
+                            onClick={handleRename}
                         >
                             <span className="sr-only">Rename</span>
                             <span>Rename</span>

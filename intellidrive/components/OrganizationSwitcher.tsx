@@ -5,7 +5,7 @@ import {  useUser } from "@clerk/nextjs";
 import { OrganizationSwitcher } from "@clerk/nextjs";
 
 const OrganizationSwitcherComponent: React.FC = () => {
-  const { organization, isLoaded } = useOrganizationList();
+  const { isLoaded } = useOrganizationList();
   const { user } = useUser();
 
   if (!isLoaded || !user) {

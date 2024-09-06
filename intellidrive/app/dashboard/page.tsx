@@ -1,3 +1,4 @@
+/*'use client'
 import React, { useState } from 'react'
 import { auth, clerkClient } from '@clerk/nextjs/server'
 import Dropzone from '@/components/Dropzone'
@@ -59,7 +60,7 @@ async function Dashboard() {
       size: doc.data().size,
     }));
   }*/
-
+/*
   const user = userId ? await clerkClient.users.getUser(userId) : null;
 
 
@@ -70,13 +71,19 @@ async function Dashboard() {
 
       <section className="container space-y-5">
       <h2 className="font-bold">{isPersonal ? "Personal Files" : "Organization Files"}</h2>
-        {/*<OrganizationSwitcherComponent />*/}
-        <div>
-          <TableWrapper skeletonFiles={files} />
+        {/*<OrganizationSwitcherComponent />*/
+        /*<div>
+          <TableWrapper skeletonFiles={files} isPersonal={isPersonal} />
         </div>
       </section>
     </div>
   )
 }
 
-export default Dashboard
+export default Dashboard*/
+
+import DashboardServer from './DashboardServer';
+
+export default function DashboardPage() {
+  return <DashboardServer />;
+}

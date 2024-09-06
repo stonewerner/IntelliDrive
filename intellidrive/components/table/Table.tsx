@@ -25,11 +25,13 @@ import RenameModal from "../RenameModal"
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
+  isPersonal: boolean
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  isPersonal,
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
@@ -84,8 +86,8 @@ export function DataTable<TData, TValue>({
                 key={row.id}
                 data-state={row.getIsSelected() && "selected"}
               >
-                <DeleteModal />
-                <RenameModal />
+                <DeleteModal isPersonal={isPersonal} />
+                <RenameModal isPersonal={isPersonal} />
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>
                     {cell.column.id == 'timestamp' ? (
