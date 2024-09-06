@@ -66,9 +66,6 @@ function TableWrapper({ skeletonFiles, isPersonal }: TableWrapperProps) {
     return <div>Error: {error.message}</div>;
   }
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
 
   if (docs?.docs.length === undefined)
     return (
