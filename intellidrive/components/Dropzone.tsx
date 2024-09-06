@@ -1,7 +1,6 @@
 "use client";
-
 import { cn } from "@/lib/utils";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useOrganization } from "@clerk/nextjs";
 import React, { useState } from "react";
 import DropzoneComponent from "react-dropzone";
 import {
@@ -23,11 +22,17 @@ interface FileMetadata {
     fileName: string;
 }
 
-function Dropzone() {
+
+interface DropzoneProps {
+  isPersonal: boolean;
+}
+
+function Dropzone({ isPersonal }: DropzoneProps) {
     const maxSize = 20971520; //20MB
 
     const [loading, setLoading] = useState(false);
-    const { user } = useUser();
+    const { isLoaded, isSignedIn, user } = useUser();
+    const { organization } = useOrganization();
 
     const handleDrop = async (acceptedFiles: File[]) => {
         for (const file of acceptedFiles) {
@@ -47,6 +52,7 @@ function Dropzone() {
     const uploadToPinecone = async (fileMetadata: FileMetadata) => {
         if (!user) return;
 
+
         const res = await fetch("/api/pinecone/upload_doc", {
             method: "POST",
             body: JSON.stringify({ namespace: user.id, fileMetadata }),
@@ -65,7 +71,9 @@ function Dropzone() {
         setLoading(true);
         const toastId = toast.loading("Uploading...");
 
-        const docRef = await addDoc(collection(db, "users", user.id, "files"), {
+        const collectionPath = isPersonal ? `users/${user.id}/files` : `organizations/${organization?.id}/files`;
+
+        const docRef = await addDoc(collection(db, collectionPath), {
             userId: user.id,
             filename: selectedFile.name,
             fullName: user.fullName,
@@ -75,11 +83,12 @@ function Dropzone() {
             size: selectedFile.size,
         });
         const fileId = docRef.id;
-        const imageRef = ref(storage, `users/${user.id}/files/${docRef.id}`);
+        const imageRef = ref(storage, `${isPersonal ? `users/${user.id}` : `organizations/${organization?.id}`}/${docRef.id}`)
         const snapshot = await uploadBytes(imageRef, selectedFile);
         const downloadUrl = await getDownloadURL(snapshot.ref);
         await updateDoc(doc(db, "users", user.id, "files", docRef.id), {
             downloadURL: downloadUrl,
+
         });
 
         toast.success("Uploaded Successfully", {

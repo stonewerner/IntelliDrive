@@ -11,13 +11,18 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { useAppStore } from "@/store/store";
-import { useUser } from "@clerk/nextjs";
-import { deleteObject, ref } from "firebase/storage";
-import { db, storage } from "@/firebase";
-import { deleteDoc, doc } from "firebase/firestore";
-import toast from "react-hot-toast";
+import { useUser } from '@clerk/nextjs'
+import { deleteObject, ref } from 'firebase/storage'
+import { db, storage } from '@/firebase'
+import { deleteDoc, doc } from 'firebase/firestore'
+import toast, { Toaster } from 'react-hot-toast';
+import { useFileOperations } from './FileOperations'
 
-export function DeleteModal() {
+interface DeleteModalProps {
+  isPersonal: boolean;
+}
+
+export function DeleteModal({ isPersonal }: DeleteModalProps) {
     const { user } = useUser();
     const [isDeleteModalOpen, setIsDeleteModalOpen, fileId] = useAppStore(
         (state) => [
@@ -28,46 +33,40 @@ export function DeleteModal() {
         ]
     );
 
-    async function deleteFile() {
-        if (!user || !fileId) return;
-        const toastId = toast.loading("Deleting...");
 
-        const fileRef = ref(storage, `users/${user.id}/files/${fileId}`);
+    const { deleteFile } = useFileOperations();
 
-        try {
-            deleteObject(fileRef)
-                .then(async () => {
-                    deleteDoc(doc(db, "users", user.id, "files", fileId)).then(
-                        () => {
-                            toast.success("Deleted Successfully", {
-                                id: toastId,
-                            });
-                        }
-                    );
-                })
-                .finally(() => {
-                    setIsDeleteModalOpen(false);
-                });
-            await fetch("/api/pinecone/delete_doc", {
-                method: "POST",
-                body: JSON.stringify({ namespace: user.id, fileId }),
-            });
-        } catch (error) {
-            console.log("something went wrong with deleting.");
-            console.log(error);
-            setIsDeleteModalOpen(false);
-            toast.error("Error deleting", {
-                id: toastId,
-            });
-        }
+    async function handleDelete() {
+      if (!fileId) return;
+      const toastId = toast.loading("Deleting...");
+  
+      try {
+        await deleteFile(fileId, isPersonal);
+        await fetch("/api/pinecone/delete_doc", {
+          method: "POST",
+          body: JSON.stringify({ namespace: user.id, fileId }),
+      });
+        toast.success("Deleted Successfully", {
+          id: toastId,
+        });
+      } catch (error) {
+        console.error("Error deleting file:", error);
+        toast.error("Error deleting file", {
+          id: toastId,
+        });
+      } finally {
+        setIsDeleteModalOpen(false);
+        setFileId("");
+      }
     }
 
-    return (
-        <Dialog
-            open={isDeleteModalOpen}
-            onOpenChange={(isOpen) => {
-                setIsDeleteModalOpen(isOpen);
-            }}
+
+  return (
+    <Dialog
+        open={isDeleteModalOpen}
+        onOpenChange={(isOpen) => {
+            setIsDeleteModalOpen(isOpen);
+        }}
         >
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
@@ -88,18 +87,18 @@ export function DeleteModal() {
                         <span>Cancel</span>
                     </Button>
 
-                    <Button
-                        type="submit"
-                        size="sm"
-                        className="px-3 flex-1"
-                        variant={"destructive"}
-                        onClick={() => deleteFile()}
-                    >
-                        <span className="sr-only">Delete</span>
-                        <span>Delete</span>
-                    </Button>
-                </div>
-            </DialogContent>
-        </Dialog>
-    );
+            <Button
+                type="submit"
+                size="sm"
+                className="px-3 flex-1"
+                variant={"destructive"}
+                onClick={handleDelete}
+                >
+                <span className="sr-only">Delete</span>
+                <span>Delete</span>
+            </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
 }
