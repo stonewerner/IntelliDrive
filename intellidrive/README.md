@@ -1,36 +1,36 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
-## Getting Started
+## IntelliDrive
+IntelliDrive allows students to upload all of their files, notes, study materials, and course content and access them anywhere. AI powered search allows students to quickly and easily search their knowledge base for answers.
 
-First, run the development server:
+# Live Demo
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Check out our [Live Demo hosted on Vercel](https://drive.stonewerner.com)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+# Tools
+Next JS
+Clerk
+Pinecone
+OpenAI API
+Firebase
+Tailwind
+Shadcn ui
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+# Code
 
-## Learn More
+There's two main pages: dashboard (for uploading files) and chat (for asking AI questions about the uploads).
 
-To learn more about Next.js, take a look at the following resources:
+The dashboard has two main parts - a file drop area and a table that displays the file info (including a download link).
 
--   [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
--   [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+IntelliGent is an AI chat interface aided by RAG:
+Extract the text from uploaded files
+Create and store vector in Pinecone with some metadata.
+Query the vector store for relevant info when a users asks the chat bot a question
 
-## Deploy on Vercel
+The main logic is in:
+utils (helpers for all things related to Pinecone and text extraction).
+chat/page.tsx (the code for the actual chat bot page).
+api: APIs for communicating with OpenAI (chat), communicating with Pinecone (pinecone), and text extraction (extract)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+The rest is pretty much just config type stuff (files like firebase.ts, middleware.ts, etc)
