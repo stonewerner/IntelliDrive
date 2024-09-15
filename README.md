@@ -1,22 +1,21 @@
-
-## IntelliDrive
+# IntelliDrive
 IntelliDrive allows students to upload all of their files, notes, study materials, and course content and access them anywhere. AI powered search allows students to quickly and easily search their knowledge base for answers.
 
-# Live Demo
+## Live Demo
 
 Check out our [Live Demo hosted on Vercel](https://drive.stonewerner.com)
 
-# Tools
-Next JS
-Clerk
-Pinecone
-OpenAI API
-Firebase
-Tailwind
-Shadcn ui
+## Tools
+- Next JS
+- Clerk
+- Pinecone
+- OpenAI API
+- Firebase
+- Tailwind
+- Shadcn ui
 
 
-# Code
+## Code
 
 There's two main pages: dashboard (for uploading files) and chat (for asking AI questions about the uploads).
 
