@@ -21,6 +21,7 @@ Use `clerkClient()` as a function instead.
 
 
 ## Features to make app good
+- ability to open app in another window/tab instead of just downloading
 - Clerk organizations to support more than 5 people
 - Pinecone index for an organization instead of a single user
 - better chat UI

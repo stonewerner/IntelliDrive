@@ -32,6 +32,7 @@ export const updatePineconeIndex = async (namespace, fileMetadata) => {
                 downloadUrl: fileMetadata.downloadUrl,
                 pageContent: chunk.pageContent,
                 loc: JSON.stringify(chunk.metadata.loc),
+                namespace: namespace, // Add namespace to metadata
             },
         };
         batch.push(vector);
@@ -39,7 +40,7 @@ export const updatePineconeIndex = async (namespace, fileMetadata) => {
             await index.namespace(namespace).upsert(batch);
             batch = [];
         }
-
-        console.log(`Pinecone index updated with ${chunks.length} vectors`);
     }
+
+    console.log(`Pinecone index updated with ${chunks.length} vectors in namespace: ${namespace}`);
 };

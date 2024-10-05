@@ -22,7 +22,6 @@ interface FileMetadata {
     fileName: string;
 }
 
-
 interface DropzoneProps {
   isPersonal: boolean;
 }
@@ -54,10 +53,18 @@ function Dropzone({ isPersonal }: DropzoneProps) {
     const uploadToPinecone = async (fileMetadata: FileMetadata) => {
         if (!user) return;
 
+        const namespace = isPersonal ? user.id : organization?.id;
+        if (!namespace) {
+            console.error("No namespace available for upload");
+            return;
+        }
 
         const res = await fetch("/api/pinecone/upload_doc", {
             method: "POST",
-            body: JSON.stringify({ namespace: user.id, fileMetadata }),
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ namespace, fileMetadata }),
         });
 
         if (res.ok) {

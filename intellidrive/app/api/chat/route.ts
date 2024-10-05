@@ -1,6 +1,7 @@
 import OpenAI from "openai";
 import { NextRequest, NextResponse } from "next/server";
 import { queryPineconeVectorStore } from "@/utils/pinecone/queryPineconeIndex";
+import { auth, currentUser } from "@clerk/nextjs/server";
 
 const systemPrompt = `
 You are a document-savvy AI assistant. Your primary functions are:
@@ -31,34 +32,45 @@ interface Message {
     content: string;
 }
 
+interface OrganizationMembership {
+    organization: { id: string };
+}
+
 export async function POST(req: NextRequest) {
     try {
-        const { messages, namespace } = await req.json();
+        const { messages } = await req.json();
+        const { userId } = auth();
+        const user = await currentUser();
 
-        const userMessages = messages.filter((m: Message) => m.role === "user");
-        const messagesToUse = userMessages.slice(-10);
-        const text = messagesToUse
-            .map((m: Message) => m.content.trim())
-            .join(" ");
-        const res = await queryPineconeVectorStore(namespace, text);
+        if (!userId || !user) {
+            return new NextResponse("Unauthorized", { status: 401 });
+        }
+
+        // Type assertion to resolve the organizationMemberships warning
+        const organizationIds = (user as any).organizationMemberships?.map(
+            (membership: OrganizationMembership) => membership.organization.id
+        ) || [];
+
+        const lastMessageContent = messages[messages.length - 1].content;
+        const results = await queryPineconeVectorStore(userId, organizationIds, lastMessageContent);
 
         let resultString = "";
-        if (res.matches.length > 0) {
+        if (results.length > 0) {
             resultString += "\n\nReturned Results RAG:";
-            res.matches.forEach((match) => {
+            results.forEach((match: any) => {
                 resultString += `
-            \n
-            File Name: ${match.metadata?.fileName}
-            Excerpt of file content: ${match.metadata?.pageContent}
-            Location of content in file: ${match.metadata?.loc}
-            File Download URL: ${match.metadata?.downloadUrl}
-            \n\n 
-            `;
+                \n
+                File Name: ${match.metadata?.fileName}
+                Excerpt of file content: ${match.metadata?.pageContent}
+                Location of content in file: ${match.metadata?.loc}
+                File Download URL: ${match.metadata?.downloadUrl}
+                \n\n 
+                `;
             });
         }
 
         const lastMessage = messages[messages.length - 1];
-        const lastMessageContent = lastMessage.content + resultString;
+        const updatedLastMessageContent = lastMessage.content + resultString;
         const dataWithoutLastMessage = messages.slice(0, messages.length - 1);
 
         const openai = new OpenAI();
@@ -66,7 +78,7 @@ export async function POST(req: NextRequest) {
             messages: [
                 { role: "system", content: systemPrompt },
                 ...dataWithoutLastMessage,
-                { role: "user", content: lastMessageContent },
+                { role: "user", content: updatedLastMessageContent },
             ],
             model: "gpt-4o-mini",
             stream: true,
