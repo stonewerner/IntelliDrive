@@ -64,6 +64,7 @@ export async function POST(req: NextRequest) {
                 Excerpt of file content: ${match.metadata?.pageContent}
                 Location of content in file: ${match.metadata?.loc}
                 File Download URL: ${match.metadata?.downloadUrl}
+                Source: ${match.metadata?.namespace === userId ? 'Personal' : 'Organization'}
                 \n\n 
                 `;
             });
@@ -73,7 +74,9 @@ export async function POST(req: NextRequest) {
         const updatedLastMessageContent = lastMessage.content + resultString;
         const dataWithoutLastMessage = messages.slice(0, messages.length - 1);
 
-        const openai = new OpenAI();
+        const openai = new OpenAI({
+            apiKey: process.env.OPENAI_API_KEY,
+        });
         const completion = await openai.chat.completions.create({
             messages: [
                 { role: "system", content: systemPrompt },

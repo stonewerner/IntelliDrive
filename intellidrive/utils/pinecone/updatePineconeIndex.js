@@ -14,7 +14,10 @@ export const updatePineconeIndex = async (namespace, fileMetadata) => {
     console.log(
         `Calling OpenAI's Embedding endpoint documents with ${chunks.length} text chunks ...`
     );
-    const embeddingsArrays = await new OpenAIEmbeddings().embedDocuments(
+    const embeddings = new OpenAIEmbeddings({
+        openAIApiKey: process.env.OPENAI_API_KEY,
+    });
+    const embeddingsArrays = await embeddings.embedDocuments(
         chunks.map((chunk) => chunk.pageContent.replace(/\n/g, " "))
     );
 

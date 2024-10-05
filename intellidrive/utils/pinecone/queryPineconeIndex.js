@@ -5,7 +5,13 @@ export const queryPineconeVectorStore = async (userId, organizationIds, question
     const pc = getPineconeClient();
     const indexName = "intelli-drive-rag";
     const index = pc.Index(indexName);
-    const queryEmbedding = await new OpenAIEmbeddings().embedQuery(question);
+
+    // Explicitly create OpenAIEmbeddings with the API key
+    const embeddings = new OpenAIEmbeddings({
+        openAIApiKey: process.env.OPENAI_API_KEY,
+    });
+
+    const queryEmbedding = await embeddings.embedQuery(question);
 
     const namespaces = [userId, ...organizationIds];
     let allResults = [];

@@ -1,5 +1,5 @@
 import { getPineconeClient } from "@/utils/pinecone/pineconeClient";
-import { clerkClient } from "@clerk/nextjs";
+import { clerkClient } from "@clerk/nextjs/server";
 
 export const createPineconeIndex = async () => {
     const pc = getPineconeClient();
@@ -28,22 +28,35 @@ export const createPineconeIndex = async () => {
     // Get the index
     const index = pc.Index(indexName);
 
-    // Fetch all organizations
-    const organizations = await clerkClient.organizations.getOrganizationList();
+    try {
+        // Fetch all organizations
+        const organizationsResponse = await clerkClient.organizations.getOrganizationList();
+        console.log("Organizations fetched:", organizationsResponse);
 
-    // Create a namespace for each organization
-    for (const org of organizations) {
-        try {
-            await index.namespace(org.id).describe();
-            console.log(`Namespace for organization ${org.id} already exists.`);
-        } catch (error) {
-            if (error.message.includes("not found")) {
-                // Namespace doesn't exist, so create it
-                await index.namespace(org.id).create();
-                console.log(`Created namespace for organization ${org.id}`);
-            } else {
-                console.error(`Error checking/creating namespace for organization ${org.id}:`, error);
+        if (!organizationsResponse.data || !Array.isArray(organizationsResponse.data)) {
+            console.error("Organizations data is not an array:", organizationsResponse);
+            return;
+        }
+
+        const organizations = organizationsResponse.data;
+
+        // Create a namespace for each organization
+        for (const org of organizations) {
+            try {
+                await index.namespace(org.id).describe();
+                console.log(`Namespace for organization ${org.id} already exists.`);
+            } catch (error) {
+                if (error.message.includes("not found")) {
+                    // Namespace doesn't exist, so create it
+                    await index.namespace(org.id).create();
+                    console.log(`Created namespace for organization ${org.id}`);
+                } else {
+                    console.error(`Error checking/creating namespace for organization ${org.id}:`, error);
+                }
             }
         }
+    } catch (error) {
+        console.error("Error fetching organizations:", error);
+        console.error("Error details:", JSON.stringify(error, null, 2));
     }
 };
