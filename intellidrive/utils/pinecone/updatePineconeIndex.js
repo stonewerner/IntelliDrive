@@ -21,6 +21,9 @@ export const updatePineconeIndex = async (namespace, fileMetadata) => {
         chunks.map((chunk) => chunk.pageContent.replace(/\n/g, " "))
     );
 
+    console.log(`Updating Pinecone index for namespace: ${namespace}`);
+    console.log(`File metadata:`, JSON.stringify(fileMetadata, null, 2));
+
     const batchSize = 100;
     let batch = [];
     for (let i = 0; i < chunks.length; i++) {
@@ -43,6 +46,7 @@ export const updatePineconeIndex = async (namespace, fileMetadata) => {
             await index.namespace(namespace).upsert(batch);
             batch = [];
         }
+        console.log(`Upserting vector ${i + 1}/${chunks.length} to namespace: ${namespace}`);
     }
 
     console.log(`Pinecone index updated with ${chunks.length} vectors in namespace: ${namespace}`);

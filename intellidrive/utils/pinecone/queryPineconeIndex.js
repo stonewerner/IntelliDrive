@@ -13,18 +13,28 @@ export const queryPineconeVectorStore = async (userId, organizationIds, question
 
     const queryEmbedding = await embeddings.embedQuery(question);
 
+    console.log(`Query: "${question}"`);
+    console.log(`Query embedding (first 5 values):`, queryEmbedding.slice(0, 5));
+
     const namespaces = [userId, ...organizationIds];
     let allResults = [];
 
     for (const namespace of namespaces) {
         try {
+            console.log(`Querying namespace: ${namespace}`);
             const results = await index.query({
                 vector: queryEmbedding,
                 topK: 5,
                 includeMetadata: true,
-                filter: { namespace: namespace } // Use filter instead of namespace parameter
+                filter: { namespace: { $eq: namespace } }
             });
-            allResults = allResults.concat(results.matches);
+            console.log(`Results for namespace ${namespace}:`, JSON.stringify(results, null, 2));
+            if (results.matches && results.matches.length > 0) {
+                console.log(`Found ${results.matches.length} matches in namespace ${namespace}`);
+                allResults = allResults.concat(results.matches);
+            } else {
+                console.log(`No matches found in namespace ${namespace}`);
+            }
         } catch (error) {
             console.error(`Error querying namespace ${namespace}:`, error);
         }

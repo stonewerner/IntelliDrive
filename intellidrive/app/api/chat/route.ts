@@ -1,7 +1,8 @@
 import OpenAI from "openai";
 import { NextRequest, NextResponse } from "next/server";
 import { queryPineconeVectorStore } from "@/utils/pinecone/queryPineconeIndex";
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { auth, clerkClient } from "@clerk/nextjs/server";
+import { createPineconeIndex } from "@/utils/pinecone/createPineconeIndex";
 
 const systemPrompt = `
 You are a document-savvy AI assistant. Your primary functions are:
@@ -40,21 +41,27 @@ export async function POST(req: NextRequest) {
     try {
         const { messages } = await req.json();
         const { userId } = auth();
-        const user = await currentUser();
 
-        if (!userId || !user) {
+        if (!userId) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
+        // Fetch user data directly from Clerk API
+        const user = await clerkClient.users.getUser(userId);
         console.log("Full user object:", JSON.stringify(user, null, 2));
 
+        // Fetch organization memberships
+        const memberships = await clerkClient.users.getOrganizationMembershipList({ userId });
+        console.log("User memberships:", JSON.stringify(memberships, null, 2));
+
         // Get organization IDs the user is a member of
-        const organizationIds = (user as any).organizationMemberships?.map(
-            (membership: { organization: { id: string } }) => membership.organization.id
-        ) || [];
+        const organizationIds = memberships.data.map(membership => membership.organization.id);
 
         console.log("User ID:", userId);
         console.log("Organization IDs:", organizationIds);
+
+        // Ensure namespaces exist
+        await createPineconeIndex(userId, organizationIds);
 
         const lastMessageContent = messages[messages.length - 1].content;
         const results = await queryPineconeVectorStore(userId, organizationIds, lastMessageContent);
