@@ -31,7 +31,6 @@ export const createPineconeIndex = async () => {
     try {
         // Fetch all organizations
         const organizationsResponse = await clerkClient.organizations.getOrganizationList();
-        console.log("Organizations fetched:", organizationsResponse);
 
         if (!organizationsResponse.data || !Array.isArray(organizationsResponse.data)) {
             console.error("Organizations data is not an array:", organizationsResponse);
@@ -43,13 +42,30 @@ export const createPineconeIndex = async () => {
         // Create a namespace for each organization
         for (const org of organizations) {
             try {
-                await index.namespace(org.id).describe();
+                // Instead of using describe, we'll try to fetch vectors from the namespace
+                // If it doesn't exist, this will throw an error
+                await index.fetch([`test_vector_${org.id}`], { namespace: org.id });
                 console.log(`Namespace for organization ${org.id} already exists.`);
             } catch (error) {
-                if (error.message.includes("not found")) {
-                    // Namespace doesn't exist, so create it
-                    await index.namespace(org.id).create();
+                if (error.message.includes("not found") || error.message.includes("does not exist")) {
+                    // Namespace doesn't exist, so create it by upserting a test vector
+                    await index.upsert({
+                        upsertRequest: {
+                            vectors: [{
+                                id: `test_vector_${org.id}`,
+                                values: new Array(1536).fill(0), // Create a zero vector with the correct dimension
+                                metadata: { test: true }
+                            }],
+                            namespace: org.id
+                        }
+                    });
                     console.log(`Created namespace for organization ${org.id}`);
+                    
+                    // Optionally, delete the test vector after creating the namespace
+                    await index.delete1({
+                        ids: [`test_vector_${org.id}`],
+                        namespace: org.id
+                    });
                 } else {
                     console.error(`Error checking/creating namespace for organization ${org.id}:`, error);
                 }

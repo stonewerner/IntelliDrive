@@ -22,6 +22,7 @@ Use `clerkClient()` as a function instead.
 
 ## Features to make app good
 - change "download link" to open or  view
+- downloading the essay 1 prop docx downlaods gibberish
 - Clerk organizations to support more than 5 people
 - Pinecone index for an organization instead of a single user
 - better chat UI

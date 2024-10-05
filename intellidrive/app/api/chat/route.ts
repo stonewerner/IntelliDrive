@@ -46,13 +46,20 @@ export async function POST(req: NextRequest) {
             return new NextResponse("Unauthorized", { status: 401 });
         }
 
-        // Type assertion to resolve the organizationMemberships warning
+        console.log("Full user object:", JSON.stringify(user, null, 2));
+
+        // Get organization IDs the user is a member of
         const organizationIds = (user as any).organizationMemberships?.map(
-            (membership: OrganizationMembership) => membership.organization.id
+            (membership: { organization: { id: string } }) => membership.organization.id
         ) || [];
+
+        console.log("User ID:", userId);
+        console.log("Organization IDs:", organizationIds);
 
         const lastMessageContent = messages[messages.length - 1].content;
         const results = await queryPineconeVectorStore(userId, organizationIds, lastMessageContent);
+
+        console.log("Query results:", JSON.stringify(results, null, 2));
 
         let resultString = "";
         if (results.length > 0) {

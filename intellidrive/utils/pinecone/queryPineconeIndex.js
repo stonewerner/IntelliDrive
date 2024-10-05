@@ -17,12 +17,17 @@ export const queryPineconeVectorStore = async (userId, organizationIds, question
     let allResults = [];
 
     for (const namespace of namespaces) {
-        const results = await index.namespace(namespace).query({
-            topK: 5,
-            vector: queryEmbedding,
-            includeMetadata: true,
-        });
-        allResults = allResults.concat(results.matches);
+        try {
+            const results = await index.query({
+                vector: queryEmbedding,
+                topK: 5,
+                includeMetadata: true,
+                filter: { namespace: namespace } // Use filter instead of namespace parameter
+            });
+            allResults = allResults.concat(results.matches);
+        } catch (error) {
+            console.error(`Error querying namespace ${namespace}:`, error);
+        }
     }
 
     // Sort results by score in descending order
