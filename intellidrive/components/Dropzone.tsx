@@ -13,7 +13,6 @@ import {
 import { db, storage } from "@/firebase";
 import { getDownloadURL, ref, uploadBytes } from "@firebase/storage";
 import toast from "react-hot-toast";
-import { extractFileText } from "@/utils/textExtraction";
 
 interface FileMetadata {
     downloadUrl: string;
@@ -22,9 +21,8 @@ interface FileMetadata {
     fileName: string;
 }
 
-
 interface DropzoneProps {
-  isPersonal: boolean;
+    isPersonal: boolean;
 }
 
 function Dropzone({ isPersonal }: DropzoneProps) {
@@ -38,6 +36,9 @@ function Dropzone({ isPersonal }: DropzoneProps) {
         for (const file of acceptedFiles) {
             const firebaseFileInfo = await uploadFileToFirebase(file);
             if (firebaseFileInfo) {
+                await uploadToRagie(firebaseFileInfo, file);
+            }
+            /*if (firebaseFileInfo) {
                 const fileText = await extractFileText(file);
                 if (fileText) {
                     const fileMetadata = {
@@ -48,12 +49,58 @@ function Dropzone({ isPersonal }: DropzoneProps) {
                     await uploadToPinecone(fileMetadata);
                 }
             }
+                */
+        }
+    };
+
+    const uploadToRagie = async (
+        firebaseFileInfo: { downloadUrl: string; fileId: string },
+        file: File
+    ) => {
+        if (!user) return;
+
+        try {
+            const formData = new FormData();
+            formData.append("file", file, file.name);
+            formData.append(
+                "metadata",
+                JSON.stringify({
+                    title: file.name,
+                    firebaseUrl: firebaseFileInfo.downloadUrl,
+                    firebaseId: firebaseFileInfo.fileId,
+                    // Add any additional metadata fields you need
+                })
+            );
+
+            const response = await fetch("/api/ragie/upload", {
+                method: "POST",
+                body: formData,
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || "Failed to upload to Ragie");
+            }
+
+            // Update Firestore with the Ragie document_id
+            const collectionPath = isPersonal
+                ? `users/${user.id}/files`
+                : `organizations/${organization?.id}/files`;
+
+            await updateDoc(doc(db, collectionPath, firebaseFileInfo.fileId), {
+                ragieDocumentId: data.data.document_id,
+            });
+
+            console.log("Successfully uploaded to Ragie:", data);
+        } catch (error) {
+            console.error("Error uploading to Ragie:", error);
+            toast.error("Failed to upload to Ragie");
         }
     };
 
     const uploadToPinecone = async (fileMetadata: FileMetadata) => {
         if (!user) return;
-
 
         const res = await fetch("/api/pinecone/upload_doc", {
             method: "POST",
@@ -73,7 +120,9 @@ function Dropzone({ isPersonal }: DropzoneProps) {
         setLoading(true);
         const toastId = toast.loading("Uploading...");
 
-        const collectionPath = isPersonal ? `users/${user.id}/files` : `organizations/${organization?.id}/files`;
+        const collectionPath = isPersonal
+            ? `users/${user.id}/files`
+            : `organizations/${organization?.id}/files`;
 
         try {
             const docRef = await addDoc(collection(db, collectionPath), {
@@ -86,15 +135,18 @@ function Dropzone({ isPersonal }: DropzoneProps) {
                 size: selectedFile.size,
             });
             const fileId = docRef.id;
-            const imageRef = ref(storage, `${isPersonal ? `users/${user.id}` : `organizations/${organization?.id}`}/files/${docRef.id}`);
+            const imageRef = ref(
+                storage,
+                `${isPersonal ? `users/${user.id}` : `organizations/${organization?.id}`}/files/${docRef.id}`
+            );
             const snapshot = await uploadBytes(imageRef, selectedFile);
             const downloadUrl = await getDownloadURL(snapshot.ref);
-    
+
             // Update the document in the correct collection
             await updateDoc(doc(db, collectionPath, docRef.id), {
                 downloadURL: downloadUrl,
             });
-    
+
             toast.success("Uploaded Successfully", {
                 id: toastId,
             });

@@ -7,7 +7,7 @@ import { ThemeToggler } from "./ThemeToggler";
 function Header() {
     return (
         <header className="flex items-center justify-between">
-            <Link href="/" className="flex items-center space-x-2">
+            <Link href="/dashboard" className="flex items-center space-x-2">
                 <div className="bg-[#0160FE] w-fit">
                     <Image
                         src="/ai-cloud.png"
