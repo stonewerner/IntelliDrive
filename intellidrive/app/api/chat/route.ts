@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
                 \n
                 File Name: ${chunk.document_name || "Unknown"}
                 Excerpt of file content: ${chunk.text || "No content available"}
-                File Download URL: ${chunk.metadata?.firebaseUrl || "No URL available"}
+                File Download URL: ${chunk.document_metadata?.firebaseUrl || "No URL available"}
                 \n\n 
                 `;
             });
