@@ -1,17 +1,12 @@
 "use client";
 
-import {
-    Box,
-    Stack,
-    TextField,
-    InputAdornment,
-    IconButton,
-    Button,
-} from "@mui/material";
-import { Send } from "@mui/icons-material";
-import React, { useEffect, useRef, useState } from "react";
-import ReactMarkdown from "react-markdown";
-import rehypeRaw from "rehype-raw";
+import { useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { ChatMessage } from "@/components/chat-message";
+import { Bot, Send, Trash2 } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
 import {
     collection,
@@ -24,7 +19,6 @@ import { db } from "@/firebase";
 
 export default function Chat() {
     const { user } = useUser();
-    const messageEndRef = useRef<HTMLDivElement | null>(null);
     const [message, setMessage] = useState("");
     const [messages, setMessages] = useState([
         {
@@ -33,11 +27,6 @@ export default function Chat() {
                 "Hi, I'm the IntelliDrive support assistant. How can I help you today?",
         },
     ]);
-
-    const scrollToBottom = () => {
-        console.log("Scrolling....");
-        messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    };
 
     useEffect(() => {
         async function loadMessages() {
@@ -56,22 +45,6 @@ export default function Chat() {
         loadMessages();
     }, [user]);
 
-    useEffect(() => {
-        scrollToBottom();
-    }, [messages]);
-
-    const getBubbleBgColor = (role: string) => {
-        return role === "assistant" ? "grey.200" : "primary.main";
-    };
-
-    const getTextColor = (role: string) => {
-        return role === "assistant" ? "black" : "white";
-    };
-
-    const getMessageAlignment = (role: string) => {
-        return role === "assistant" ? "flex-start" : "flex-end";
-    };
-
     const updateMessagesInFirebase = async (
         messages: { role: string; content: string }[]
     ) => {
@@ -86,11 +59,12 @@ export default function Chat() {
             await batch.commit();
         } catch (error) {
             console.error("Error saving messages:", error);
-            alert("An error occurred while user messages.");
+            alert("An error occurred while saving user messages.");
         }
     };
 
-    const handleSendMessage = async () => {
+    const handleSendMessage = async (e: React.FormEvent) => {
+        e.preventDefault();
         if (!user || !message.trim()) return;
 
         setMessages((messages) => [
@@ -139,118 +113,67 @@ export default function Chat() {
         await updateMessagesInFirebase(messages.slice(1));
     };
 
-    const handleKeyPress = async (event: React.KeyboardEvent) => {
-        if (event.key === "Enter" && !event.shiftKey) {
-            event.preventDefault();
-            await handleSendMessage();
-        }
-    };
-
     const handleClearChat = async () => {
         await updateMessagesInFirebase([]);
         window.location.reload();
     };
 
     return (
-        <div className="border-t">
-            <Box
-                width="100vw"
-                height={{ xs: "85vh", md: "90vh" }}
-                display="flex"
-                flexDirection="column"
-                justifyContent="center"
-                alignItems="center"
-            >
-                <Stack
-                    direction="column"
-                    width={{ xs: "95vw", sm: "90vw", md: "800px" }}
-                    height={{ xs: "80vh", md: "85vh" }}
-                    boxShadow={2}
-                    borderRadius={2}
-                    border={1}
-                    borderColor="grey.300"
-                    p={2}
-                    spacing={3}
-                    my={2}
-                    mx={2}
-                >
-                    <Stack
-                        direction="column"
-                        spacing={2}
-                        flexGrow={1}
-                        overflow="auto"
-                        maxHeight="100%"
-                    >
-                        {messages.map((message, index) => {
-                            return (
-                                <Box
-                                    key={index}
-                                    display="flex"
-                                    justifyContent={getMessageAlignment(
-                                        message.role
-                                    )}
-                                >
-                                    <Box
-                                        bgcolor={getBubbleBgColor(message.role)}
-                                        color={getTextColor(message.role)}
-                                        borderRadius={5}
-                                        p={3}
-                                    >
-                                        <ReactMarkdown
-                                            rehypePlugins={[rehypeRaw]}
-                                        >
-                                            {message.content}
-                                        </ReactMarkdown>
-                                    </Box>
-                                </Box>
-                            );
-                        })}
-                        <div ref={messageEndRef} />
-                    </Stack>
-                    <Stack direction="row" spacing={1}>
-                        <TextField
-                            label="Message"
-                            fullWidth
-                            multiline
-                            value={message}
-                            onChange={(e) => setMessage(e.target.value)}
-                            onKeyUp={handleKeyPress}
-                            sx={{
-                                bgcolor: "grey.200",
-                                borderRadius: 2,
-                            }}
-                            slotProps={{
-                                input: {
-                                    endAdornment: (
-                                        <InputAdornment
-                                            position="end"
-                                            sx={{
-                                                position: "absolute",
-                                                bottom: 13,
-                                                right: 5,
-                                            }}
-                                        >
-                                            <IconButton
-                                                onClick={handleSendMessage}
-                                            >
-                                                <Send />
-                                            </IconButton>
-                                            <Button
-                                                color="error"
-                                                variant="contained"
-                                                size="small"
-                                                onClick={handleClearChat}
-                                            >
-                                                Clear
-                                            </Button>
-                                        </InputAdornment>
-                                    ),
-                                },
-                            }}
-                        />
-                    </Stack>
-                </Stack>
-            </Box>
+        <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
+            <main className="flex-1 overflow-hidden">
+                <Card className="h-full flex flex-col">
+                    <ScrollArea className="flex-1 p-4">
+                        {messages.length === 1 && (
+                            <div className="flex flex-col items-center justify-center h-full space-y-4">
+                                <Bot className="h-12 w-12 text-muted-foreground" />
+                                <h1 className="text-2xl font-bold text-muted-foreground">
+                                    How can I help you today?
+                                </h1>
+                            </div>
+                        )}
+                        {messages.map((message, index) => (
+                            <ChatMessage key={index} message={message} />
+                        ))}
+                    </ScrollArea>
+
+                    <div className="p-4 border-t">
+                        <form
+                            onSubmit={handleSendMessage}
+                            className="flex gap-2"
+                        >
+                            <Input
+                                value={message}
+                                onChange={(e) => setMessage(e.target.value)}
+                                placeholder="Type your message..."
+                                className="flex-1"
+                                onKeyUp={(e) => {
+                                    if (e.key === "Enter" && !e.shiftKey) {
+                                        e.preventDefault();
+                                        handleSendMessage(e);
+                                    }
+                                }}
+                            />
+                            <Button type="submit" size="icon">
+                                <Send className="h-4 w-4" />
+                                <span className="sr-only">Send message</span>
+                            </Button>
+                            <Button
+                                type="button"
+                                size="icon"
+                                variant="destructive"
+                                onClick={handleClearChat}
+                            >
+                                <Trash2 className="h-4 w-4" />
+                                <span className="sr-only">Clear chat</span>
+                            </Button>
+                        </form>
+                        <p className="text-xs text-center text-muted-foreground mt-2">
+                            AI can make mistakes. Consider checking important
+                            information.
+                        </p>
+                    </div>
+                </Card>
+            </main>
         </div>
     );
 }
