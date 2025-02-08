@@ -67,6 +67,8 @@ function Dropzone({ isPersonal }: DropzoneProps) {
                 "metadata",
                 JSON.stringify({
                     title: file.name,
+                    firebaseUrl: firebaseFileInfo.downloadUrl,
+                    firebaseId: firebaseFileInfo.fileId,
                     // Add any additional metadata fields you need
                 })
             );

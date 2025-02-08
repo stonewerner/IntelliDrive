@@ -1,6 +1,5 @@
 import OpenAI from "openai";
 import { NextRequest, NextResponse } from "next/server";
-import { queryPineconeVectorStore } from "@/utils/pinecone/queryPineconeIndex";
 
 const systemPrompt = `
 You are a document-savvy AI assistant. Your primary functions are:
@@ -31,29 +30,58 @@ interface Message {
     content: string;
 }
 
+async function queryRagie(query: string) {
+    try {
+        const response = await fetch("https://api.ragie.ai/retrievals", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${process.env.RAGIE_API_KEY}`,
+            },
+            body: JSON.stringify({
+                query,
+                // Add any filters if needed
+                // filters: { ... }
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error(
+                `Ragie API error: ${response.status} ${response.statusText}`
+            );
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error("Error querying Ragie:", error);
+        throw error;
+    }
+}
+
 export async function POST(req: NextRequest) {
     try {
-        const { messages, namespace } = await req.json();
+        const { messages } = await req.json();
 
         const userMessages = messages.filter((m: Message) => m.role === "user");
         const messagesToUse = userMessages.slice(-10);
-        const text = messagesToUse
+        const query = messagesToUse
             .map((m: Message) => m.content.trim())
             .join(" ");
-        const res = await queryPineconeVectorStore(namespace, text);
+
+        // Query Ragie instead of Pinecone
+        const ragieResults = await queryRagie(query);
 
         let resultString = "";
-        if (res.matches.length > 0) {
-            resultString += "\n\nReturned Results RAG:";
-            res.matches.forEach((match) => {
+        if (ragieResults.scored_chunks.length > 0) {
+            resultString += "\n\nRAG Results:";
+            ragieResults.scored_chunks.forEach((chunk: any) => {
                 resultString += `
-            \n
-            File Name: ${match.metadata?.fileName}
-            Excerpt of file content: ${match.metadata?.pageContent}
-            Location of content in file: ${match.metadata?.loc}
-            File Download URL: ${match.metadata?.downloadUrl}
-            \n\n 
-            `;
+                \n
+                File Name: ${chunk.document_name || "Unknown"}
+                Excerpt of file content: ${chunk.text || "No content available"}
+                File Download URL: ${chunk.metadata?.firebaseUrl || "No URL available"}
+                \n\n 
+                `;
             });
         }
 
@@ -61,14 +89,17 @@ export async function POST(req: NextRequest) {
         const lastMessageContent = lastMessage.content + resultString;
         const dataWithoutLastMessage = messages.slice(0, messages.length - 1);
 
-        const openai = new OpenAI();
+        const openai = new OpenAI({
+            baseURL: "https://openrouter.ai/api/v1",
+            apiKey: `${process.env.OPEN_ROUTER_API_KEY}`,
+        });
         const completion = await openai.chat.completions.create({
             messages: [
                 { role: "system", content: systemPrompt },
                 ...dataWithoutLastMessage,
                 { role: "user", content: lastMessageContent },
             ],
-            model: "gpt-4o-mini",
+            model: "deepseek/deepseek-r1:free",
             stream: true,
         });
 
