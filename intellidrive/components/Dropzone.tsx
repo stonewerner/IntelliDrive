@@ -84,6 +84,15 @@ function Dropzone({ isPersonal }: DropzoneProps) {
                 throw new Error(data.error || "Failed to upload to Ragie");
             }
 
+            // Update Firestore with the Ragie document_id
+            const collectionPath = isPersonal
+                ? `users/${user.id}/files`
+                : `organizations/${organization?.id}/files`;
+
+            await updateDoc(doc(db, collectionPath, firebaseFileInfo.fileId), {
+                ragieDocumentId: data.data.document_id,
+            });
+
             console.log("Successfully uploaded to Ragie:", data);
         } catch (error) {
             console.error("Error uploading to Ragie:", error);

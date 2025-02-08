@@ -22,7 +22,14 @@ export async function POST(req: Request) {
             throw new Error(data.message || "Failed to upload to Ragie");
         }
 
-        return NextResponse.json({ success: true, data });
+        // Return the Ragie document_id along with the success response
+        return NextResponse.json({
+            success: true,
+            data: {
+                ...data,
+                document_id: data.id,
+            },
+        });
     } catch (error) {
         console.error("Error in Ragie upload:", error);
         return NextResponse.json(
