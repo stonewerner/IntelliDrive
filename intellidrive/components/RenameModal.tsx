@@ -1,58 +1,55 @@
-'use client'
-import React, { useState } from 'react'
-import { useUser } from '@clerk/nextjs'
-import { useAppStore } from '@/store/store';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { doc, updateDoc } from 'firebase/firestore';
-import { db } from '@/firebase';
-import toast, { Toaster } from 'react-hot-toast';
-import { useFileOperations } from './FileOperations';
+"use client";
+import React, { useState } from "react";
+import { useUser } from "@clerk/nextjs";
+import { useAppStore } from "@/store/store";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import toast from "react-hot-toast";
+import { useFileOperations } from "./FileOperations";
 
 interface RenameModalProps {
     isPersonal: boolean;
-  }
+}
 
 function RenameModal({ isPersonal }: RenameModalProps) {
-    const { user } = useUser();
     const [input, setInput] = useState("");
-    const [isRenameModalOpen, setIsRenameModalOpen, fileId, filename] = 
+    const [isRenameModalOpen, setIsRenameModalOpen, fileId, filename] =
         useAppStore((state) => [
             state.isRenameModalOpen,
             state.setIsRenameModalOpen,
             state.fileId,
             state.filename,
         ]);
-    
-        const { renameFile } = useFileOperations();
 
-        const handleRename = async () => {
-          if (!fileId) return;
-      
-          const toastId = toast.loading("Renaming...");
-      
-          try {
+    const { renameFile } = useFileOperations();
+
+    const handleRename = async () => {
+        if (!fileId) return;
+
+        const toastId = toast.loading("Renaming...");
+
+        try {
             await renameFile(fileId, input, isPersonal);
             toast.success("Renamed Successfully", {
-              id: toastId,
+                id: toastId,
             });
             setInput("");
             setIsRenameModalOpen(false);
-          } catch (error) {
+        } catch (error) {
             console.error("Error renaming file:", error);
             toast.error("Error renaming file", {
-              id: toastId,
+                id: toastId,
             });
-          }
-        };
+        }
+    };
 
-  return (
-    <Dialog
-        open={isRenameModalOpen}
-        onOpenChange={(isOpen) => {
-            setIsRenameModalOpen(isOpen);
-        }}
+    return (
+        <Dialog
+            open={isRenameModalOpen}
+            onOpenChange={(isOpen) => {
+                setIsRenameModalOpen(isOpen);
+            }}
         >
             <DialogContent>
                 <DialogHeader>
@@ -66,7 +63,7 @@ function RenameModal({ isPersonal }: RenameModalProps) {
                             if (e.key === "Enter") {
                                 handleRename();
                             }
-                        }} 
+                        }}
                     />
 
                     <div className="flex justify-end space-x-2 py-3">
@@ -91,8 +88,8 @@ function RenameModal({ isPersonal }: RenameModalProps) {
                     </div>
                 </DialogHeader>
             </DialogContent>
-    </Dialog>
-  );
+        </Dialog>
+    );
 }
 
-export default RenameModal
+export default RenameModal;

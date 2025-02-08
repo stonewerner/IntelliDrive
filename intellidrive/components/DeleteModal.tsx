@@ -1,25 +1,20 @@
 "use client";
 
 import React from "react";
-import { Copy } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
     Dialog,
-    DialogClose,
     DialogContent,
     DialogDescription,
-    DialogFooter,
     DialogHeader,
     DialogTitle,
-    DialogTrigger,
 } from "@/components/ui/dialog";
 import { useAppStore } from "@/store/store";
 import { useUser, useOrganization } from "@clerk/nextjs";
-import { deleteObject, ref } from "firebase/storage";
-import { db, storage } from "@/firebase";
-import { deleteDoc, doc, getDoc } from "firebase/firestore";
-import toast, { Toaster } from "react-hot-toast";
+import { db } from "@/firebase";
+import { doc, getDoc } from "firebase/firestore";
+import toast from "react-hot-toast";
 import { useFileOperations } from "./FileOperations";
 
 interface DeleteModalProps {

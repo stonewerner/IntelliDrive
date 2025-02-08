@@ -13,7 +13,6 @@ import {
 import { db, storage } from "@/firebase";
 import { getDownloadURL, ref, uploadBytes } from "@firebase/storage";
 import toast from "react-hot-toast";
-import { extractFileText } from "@/utils/textExtraction";
 
 interface FileMetadata {
     downloadUrl: string;
