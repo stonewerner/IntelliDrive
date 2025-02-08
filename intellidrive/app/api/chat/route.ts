@@ -90,8 +90,7 @@ export async function POST(req: NextRequest) {
         const dataWithoutLastMessage = messages.slice(0, messages.length - 1);
 
         const openai = new OpenAI({
-            baseURL: "https://openrouter.ai/api/v1",
-            apiKey: `${process.env.OPEN_ROUTER_API_KEY}`,
+            apiKey: `${process.env.OPENAI_API_KEY}`,
         });
         const completion = await openai.chat.completions.create({
             messages: [
@@ -99,7 +98,7 @@ export async function POST(req: NextRequest) {
                 ...dataWithoutLastMessage,
                 { role: "user", content: lastMessageContent },
             ],
-            model: "deepseek/deepseek-r1:free",
+            model: "gpt-4o-mini",
             stream: true,
         });
 
