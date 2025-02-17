@@ -14,9 +14,13 @@ export async function POST(req: Request) {
             },
             body: formData,
         };
+        console.log("before fetch");
+        console.log(options);
 
         const response = await fetch("https://api.ragie.ai/documents", options);
         const data = await response.json();
+        console.log("after fetch");
+        console.log(data);
 
         if (!response.ok) {
             throw new Error(data.message || "Failed to upload to Ragie");

@@ -30,7 +30,7 @@ interface Message {
     content: string;
 }
 
-async function queryRagie(query: string) {
+async function queryRagie(query: string, partition: string) {
     try {
         const response = await fetch("https://api.ragie.ai/retrievals", {
             method: "POST",
@@ -40,6 +40,7 @@ async function queryRagie(query: string) {
             },
             body: JSON.stringify({
                 query,
+                partition,
                 // Add any filters if needed
                 // filters: { ... }
             }),
@@ -60,7 +61,8 @@ async function queryRagie(query: string) {
 
 export async function POST(req: NextRequest) {
     try {
-        const { messages } = await req.json();
+        const { messages, userId, organizationId, isPersonal } =
+            await req.json();
 
         const userMessages = messages.filter((m: Message) => m.role === "user");
         const messagesToUse = userMessages.slice(-10);
@@ -69,7 +71,13 @@ export async function POST(req: NextRequest) {
             .join(" ");
 
         // Query Ragie instead of Pinecone
-        const ragieResults = await queryRagie(query);
+        let partition = "";
+        if (isPersonal) {
+            partition = userId.toLowerCase();
+        } else {
+            partition = organizationId.toLowerCase();
+        }
+        const ragieResults = await queryRagie(query, partition);
 
         let resultString = "";
         if (ragieResults.scored_chunks.length > 0) {
