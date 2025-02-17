@@ -78,7 +78,7 @@ export default function Chat() {
             method: "POST",
             body: JSON.stringify({
                 messages: [...messages, { role: "user", content: message }],
-                namespace: user.id,
+                userId: user.id.toLowerCase(),
             }),
         }).then(async (res) => {
             if (!res.body) {

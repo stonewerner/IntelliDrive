@@ -58,10 +58,17 @@ function Dropzone({ isPersonal }: DropzoneProps) {
         file: File
     ) => {
         if (!user) return;
+        let partition = "";
+        if (isPersonal) {
+            partition = user.id.toLowerCase();
+        } else {
+            partition = organization?.id || "";
+        }
 
         try {
             const formData = new FormData();
             formData.append("file", file, file.name);
+            formData.append("partition", partition);
             formData.append(
                 "metadata",
                 JSON.stringify({
