@@ -60,10 +60,12 @@ function Dropzone({ isPersonal }: DropzoneProps) {
         if (!user) return;
         let partition = "";
         if (isPersonal) {
-            partition = user.id.toLowerCase();
+            partition = user.id;
         } else {
             partition = organization?.id || "";
         }
+        partition = partition.toLowerCase();
+        console.log("partition", partition);
 
         try {
             const formData = new FormData();

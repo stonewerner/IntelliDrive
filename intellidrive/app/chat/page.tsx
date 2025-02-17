@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChatMessage } from "@/components/chat-message";
 import { Bot, Send, Trash2 } from "lucide-react";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useOrganization } from "@clerk/nextjs";
 import {
     collection,
     doc,
@@ -16,10 +16,13 @@ import {
     writeBatch,
 } from "firebase/firestore";
 import { db } from "@/firebase";
+import DashboardToggler from "@/components/DashboardToggler";
 
 export default function Chat() {
     const { user } = useUser();
+    const { organization } = useOrganization();
     const [message, setMessage] = useState("");
+    const [isPersonal, setIsPersonal] = useState(true);
     const [messages, setMessages] = useState([
         {
             role: "assistant",
@@ -79,6 +82,8 @@ export default function Chat() {
             body: JSON.stringify({
                 messages: [...messages, { role: "user", content: message }],
                 userId: user.id.toLowerCase(),
+                organizationId: organization?.id?.toLowerCase(),
+                isPersonal: isPersonal,
             }),
         }).then(async (res) => {
             if (!res.body) {
@@ -139,7 +144,7 @@ export default function Chat() {
                     <div className="p-4 border-t">
                         <form
                             onSubmit={handleSendMessage}
-                            className="flex gap-2"
+                            className="flex gap-2 items-center"
                         >
                             <Input
                                 value={message}
@@ -152,6 +157,10 @@ export default function Chat() {
                                         handleSendMessage(e);
                                     }
                                 }}
+                            />
+                            <DashboardToggler
+                                isPersonal={isPersonal}
+                                onToggle={setIsPersonal}
                             />
                             <Button type="submit" size="icon">
                                 <Send className="h-4 w-4" />
